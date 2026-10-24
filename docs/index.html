@@ -1,0 +1,820 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Auto-Rename for Perplexity — Crisp 3–7 Word Thread Titles (Chrome MV3)</title>
+    <meta
+      name="description"
+      content="Open-source Chrome MV3 extension that automatically renames new Perplexity.ai threads to crisp 3–7 word titles once the first answer finishes streaming. 10 LLM providers + 100% offline mode."
+    />
+    <meta property="og:title" content="Auto-Rename for Perplexity" />
+    <meta
+      property="og:description"
+      content="Stop scrolling through truncated prompts. Automatically renames new Perplexity threads to crisp 3–7 word titles after the first answer streams."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://perplexity-autorename.vercel.app/" />
+    <meta
+      property="og:image"
+      content="https://perplexity-autorename.vercel.app/assets/banner-social-1280x640.png"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Auto-Rename for Perplexity" />
+    <meta
+      name="twitter:description"
+      content="Automatically renames every new Perplexity thread to a clean 3–7 word title once the first answer finishes streaming."
+    />
+    <meta
+      name="twitter:image"
+      content="https://perplexity-autorename.vercel.app/assets/banner-social-1280x640.png"
+    />
+    <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- Sticky Pixel HUD Header -->
+    <header class="site-header">
+      <div class="container nav-bar">
+        <a href="#top" class="nav-brand">
+          <img
+            src="assets/logo.svg"
+            width="36"
+            height="36"
+            alt="Auto-Rename for Perplexity pixel logo"
+            class="pixel-crisp"
+          />
+          <div>
+            <span class="nav-brand-title">PPX AUTO-RENAME</span>
+            <span class="nav-brand-sub">3–7 Word Perplexity Thread Titler</span>
+          </div>
+        </a>
+
+        <nav class="nav-links" aria-label="Primary">
+          <a href="#why">Before / After</a>
+          <a href="#screenshots">Screenshots</a>
+          <a href="#providers">10 Providers</a>
+          <a href="#architecture">How It Works</a>
+          <a href="#install">Install</a>
+          <a href="#faq">FAQ</a>
+        </nav>
+
+        <div class="nav-actions">
+          <span class="badge ok">MV3 · V0.1.0</span>
+          <a
+            href="releases/auto-rename-for-perplexity-v0.1.0.zip"
+            download="auto-rename-for-perplexity-v0.1.0.zip"
+            class="btn primary sm"
+          >
+            ⬇ DOWNLOAD .ZIP
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main id="top">
+      <!-- Hero + Live Interactive Stream Simulator -->
+      <section class="hero">
+        <div class="container hero-grid">
+          <div>
+            <div class="hero-eyebrow">
+              <span class="badge ok"><span class="badge-dot"></span>CHROME / BRAVE / ARC / EDGE</span>
+              <span class="badge">MIT OPEN SOURCE</span>
+              <span class="badge">ZERO TELEMETRY</span>
+            </div>
+
+            <h1 class="hero-title">
+              STOP SCROLLING THROUGH <span class="accent">TRUNCATED PROMPTS.</span>
+            </h1>
+
+            <p class="hero-lead">
+              <strong>Auto-Rename for Perplexity</strong> watches only the first answer stream of a
+              brand-new <code>perplexity.ai</code> thread, summarizes the Q&amp;A into a scannable
+              <strong>3–7 word title</strong>, and saves it straight to your Perplexity sidebar
+              (<code>HTTP 204</code>)—without altering Perplexity’s page styles.
+            </p>
+
+            <div class="hero-cta-row">
+              <a
+                href="releases/auto-rename-for-perplexity-v0.1.0.zip"
+                download="auto-rename-for-perplexity-v0.1.0.zip"
+                class="btn primary"
+              >
+                ⬇ DOWNLOAD V0.1.0 (.ZIP)
+              </a>
+              <a href="#install" class="btn">60-SECOND INSTALL →</a>
+              <a href="#architecture" class="btn">HOW IT WORKS</a>
+            </div>
+
+            <div class="hero-stats">
+              <div class="stat-box">
+                <div class="stat-val">3–7</div>
+                <div class="stat-lbl">Words per title</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-val">10 + 1</div>
+                <div class="stat-lbl">LLMs + Offline mode</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-val">0 KB</div>
+                <div class="stat-lbl">Author telemetry</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-val">53/53</div>
+                <div class="stat-lbl">Automated tests</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Interactive Live Stream & Pixel HUD Simulator -->
+          <div class="sim-shell" aria-label="Interactive Perplexity Auto-Rename Simulator">
+            <div class="sim-topbar">
+              <div class="sim-dots" aria-hidden="true">
+                <span></span><span></span><span></span>
+              </div>
+              <div class="sim-url" id="sim-url">
+                https://www.perplexity.ai/search/solid-state-vs-liquid-electrolytes
+              </div>
+              <span class="badge ok">LIVE DEMO</span>
+            </div>
+
+            <div class="sim-controls">
+              <div class="sim-presets" id="sim-presets" aria-label="Demo scenario presets"></div>
+              <div class="sim-input-row">
+                <input
+                  type="text"
+                  id="sim-custom-q"
+                  aria-label="Try your own prompt"
+                  placeholder="Or type any messy prompt / stack trace…"
+                />
+                <input
+                  type="text"
+                  id="sim-prefix"
+                  aria-label="Optional title prefix"
+                  placeholder="Prefix e.g. [Research]"
+                />
+                <button type="button" class="btn primary sm" id="sim-run-btn">RUN STREAM</button>
+              </div>
+            </div>
+
+            <div class="sim-stage">
+              <aside class="sim-sidebar" aria-label="Simulated Perplexity Sidebar">
+                <div class="sim-side-label">Library · Recent</div>
+                <div class="sim-thread-item active" id="sim-active-thread">
+                  Hey can you explain how solid-stat…
+                </div>
+                <div class="sim-thread-item">Zero-Knowledge Rollup Proof Batching</div>
+                <div class="sim-thread-item">PostgreSQL MVCC Autovacuum Tuning</div>
+                <div class="sim-thread-item">WebGPU Compute Shader Memory Layout</div>
+              </aside>
+
+              <div class="sim-main">
+                <div>
+                  <div class="sim-q" id="sim-q"></div>
+                  <div class="sim-a" id="sim-a"></div>
+                </div>
+
+                <!-- Authentic Pixel HUD Toaster -->
+                <div class="hud-toast" id="sim-hud-toast" role="status" aria-live="polite">
+                  <div class="hud-top">
+                    <div class="hud-brand">
+                      <img
+                        src="assets/logo.svg"
+                        width="22"
+                        height="22"
+                        alt=""
+                        class="pixel-crisp"
+                      />
+                      <span id="sim-hud-label">WATCHING STREAM_</span>
+                    </div>
+                    <div id="sim-hud-right"></div>
+                  </div>
+                  <div class="hud-body" id="sim-hud-body">
+                    Answer streaming — will auto-rename when complete.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="sim-netlog">
+              <span id="sim-net-status">POST /rest/sse/perplexity_ask → Response.body.tee()</span>
+              <span class="badge cyan" id="sim-http-badge">SSE STREAMING</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Before / After + Smart Guardrails -->
+      <section id="why">
+        <div class="container">
+          <div class="section-head">
+            <div class="section-kicker">Why This Exists</div>
+            <h2 class="section-title">YOUR SIDEBAR, BEFORE &amp; AFTER</h2>
+            <p class="section-desc">
+              Perplexity names every thread after the raw opening words of your prompt—filling your
+              Library with conversational filler and pasted stack traces. Auto-Rename fixes that
+              automatically after the first answer completes.
+            </p>
+          </div>
+
+          <div class="compare-grid">
+            <div class="pixel-card">
+              <div class="compare-col-head">
+                <h3>WITHOUT AUTO-RENAME</h3>
+                <span class="badge warn">TRUNCATED PROMPTS</span>
+              </div>
+              <div class="compare-list">
+                <div class="compare-item bad">
+                  <span>Hey can you explain how solid-state batteries differ…</span>
+                </div>
+                <div class="compare-item bad">
+                  <span>Traceback (most recent call last): File "/app/main.py"…</span>
+                </div>
+                <div class="compare-item bad">
+                  <span>Can you compare zk-rollups vs optimistic rollups spec…</span>
+                </div>
+                <div class="compare-item bad">
+                  <span>Please summarize recent 2026 papers on off-target eff…</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="pixel-card">
+              <div class="compare-col-head">
+                <h3>WITH AUTO-RENAME</h3>
+                <span class="badge ok">CRISP 3–7 WORDS</span>
+              </div>
+              <div class="compare-list">
+                <div class="compare-item good">
+                  <span>Solid-State vs Liquid Lithium Electrolytes</span>
+                  <span class="badge ok">LLM</span>
+                </div>
+                <div class="compare-item good">
+                  <span>FastAPI Async SQLAlchemy Session Leak</span>
+                  <span class="badge ok">LLM</span>
+                </div>
+                <div class="compare-item good">
+                  <span>Zero-Knowledge Rollup Proof Batching</span>
+                  <span class="badge ok">LLM</span>
+                </div>
+                <div class="compare-item good">
+                  <span>[Research] CRISPR Prime Editing Off-Target</span>
+                  <span class="badge ok">PREFIX</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="guardrail-grid">
+            <article class="guardrail-card">
+              <div class="guardrail-icon">01</div>
+              <h3>FIRST TURN ONLY</h3>
+              <p>
+                Inspects <code>last_backend_uuid</code> and <code>is_related_query</code> so
+                follow-up questions never overwrite an existing thread’s title.
+              </p>
+            </article>
+
+            <article class="guardrail-card">
+              <div class="guardrail-icon">02</div>
+              <h3>RESPECTS MANUAL EDITS</h3>
+              <p>
+                Detects manual sidebar renames via a private <code>Symbol</code> tag and permanently
+                locks out auto-renaming for that <code>context_uuid</code>.
+              </p>
+            </article>
+
+            <article class="guardrail-card">
+              <div class="guardrail-icon">03</div>
+              <h3>REGEX RULES &amp; PREFIXES</h3>
+              <p>
+                Skip throwaway lookups (<code>^define\b</code>, <code>^translate\b</code>) with zero
+                tokens spent, or prepend project tags like <code>[Research]</code>.
+              </p>
+            </article>
+
+            <article class="guardrail-card">
+              <div class="guardrail-icon">04</div>
+              <h3>ZERO PAGE RESTYLING</h3>
+              <p>
+                Perplexity’s own fonts, colors, and React DOM stay 100% untouched. The pixel HUD
+                lives in an isolated ShadowRoot and unmounts when idle.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- Authentic Pixel UI Screenshots -->
+      <section id="screenshots">
+        <div class="container">
+          <div class="section-head">
+            <div class="section-kicker">Real Extension UI</div>
+            <h2 class="section-title">RETRO PIXEL HUD. ZERO BLOAT.</h2>
+            <p class="section-desc">
+              Bundled offline with SIL Open Font License pixel fonts (<code>Silkscreen</code> &amp;
+              <code>Pixelify Sans</code>)—giving the extension’s own toaster, popup, and settings a
+              tactile pixel HUD aesthetic while leaving Perplexity’s website completely untouched.
+            </p>
+          </div>
+
+          <div class="gallery-tabs" role="tablist" aria-label="Extension UI views">
+            <button
+              type="button"
+              role="tab"
+              aria-selected="true"
+              class="tab-btn active"
+              data-gallery-tab="toaster"
+            >
+              1. PIXEL HUD TOASTER
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected="false"
+              class="tab-btn"
+              data-gallery-tab="popup"
+            >
+              2. TOOLBAR QUICK POPUP
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected="false"
+              class="tab-btn"
+              data-gallery-tab="settings"
+            >
+              3. FULL SETTINGS &amp; HISTORY
+            </button>
+          </div>
+
+          <!-- Panel 1: Toaster -->
+          <div class="gallery-panel active" data-gallery-panel="toaster">
+            <div class="shot-split">
+              <div class="shot-frame">
+                <div class="shot-stack">
+                  <div>
+                    <div class="shot-caption">
+                      WHILE STREAMING FIRST ANSWER — WATCHING STREAM_ + 2×2 PIXEL MATRIX SPINNER
+                    </div>
+                    <img
+                      src="assets/screenshots/01-toast-watching.png"
+                      alt="Watching stream pixel HUD toast on Perplexity.ai"
+                    />
+                  </div>
+                  <div>
+                    <div class="shot-caption">
+                      STREAM COMPLETE &amp; HTTP 204 SAVED — ✓ THREAD RENAMED CONFIRMATION
+                    </div>
+                    <img
+                      src="assets/screenshots/02-toast-renamed.png"
+                      alt="Thread renamed confirmation pixel HUD toast on Perplexity.ai"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div class="pixel-card">
+                <h3>SHADOW-DOM HUD TOASTER</h3>
+                <p style="color: var(--muted); margin-top: 8px">
+                  Subtle bottom-right status HUD on <code>perplexity.ai</code>—easy to turn off
+                  anytime with a single toggle in the toolbar popup.
+                </p>
+                <div class="callout-list">
+                  <div class="callout-row">
+                    <strong>ISOLATED SHADOW ROOT</strong>
+                    Mounted inside <code>#ppx-autorename-toast</code> Shadow DOM so zero CSS rules
+                    ever collide with Perplexity’s styles.
+                  </div>
+                  <div class="callout-row">
+                    <strong>UNMOUNTED WHEN IDLE</strong>
+                    Appears only during a brand-new thread’s first stream, auto-dismisses cleanly
+                    after confirming the new title, and stays completely absent on follow-up turns.
+                  </div>
+                  <div class="callout-row">
+                    <strong>SOURCE TRANSPARENCY</strong>
+                    Displays whether your title came from your configured <code>LLM</code> or the
+                    instant offline <code>HEURISTIC</code> fallback.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Panel 2: Popup -->
+          <div class="gallery-panel" data-gallery-panel="popup">
+            <div class="shot-split">
+              <div class="shot-frame" style="display: flex; justify-content: center">
+                <img
+                  src="assets/screenshots/03-toolbar-popup.png"
+                  width="380"
+                  alt="PPX Auto-Rename toolbar popup"
+                />
+              </div>
+
+              <div class="pixel-card">
+                <h3>ONE-CLICK TOOLBAR CONTROLS</h3>
+                <p style="color: var(--muted); margin-top: 8px">
+                  Everything you reach for daily lives right inside the <code>380px</code> Chrome
+                  toolbar popup—no digging through tabs.
+                </p>
+                <div class="callout-list">
+                  <div class="callout-row">
+                    <strong>LIVE RENAME STATUS BANNER</strong>
+                    Shows the most recent generated title, active provider, and exact Perplexity
+                    persistence status (<code>HTTP 204</code>).
+                  </div>
+                  <div class="callout-row">
+                    <strong>INSTANT PROVIDER SWITCH &amp; TEST LLM</strong>
+                    Swap between all 10 providers, replace your API key (write-only—never read back
+                    into popup DOM), and run a live latency check with <code>TEST LLM</code>.
+                  </div>
+                  <div class="callout-row">
+                    <strong>TOASTER SWITCH &amp; TITLE PREFIX</strong>
+                    Toggle the bottom-right HUD toaster on/off or set a sprint prefix like
+                    <code>[Research]</code> with immediate broadcast to open Perplexity tabs.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Panel 3: Settings -->
+          <div class="gallery-panel" data-gallery-panel="settings">
+            <div class="shot-split">
+              <div class="shot-frame">
+                <div class="shot-caption">SCROLL TO EXPLORE FULL PIXEL SETTINGS PAGE</div>
+                <div class="shot-scroll-window">
+                  <img
+                    src="assets/screenshots/04-settings-full.png"
+                    alt="Full Auto-Rename for Perplexity Settings page"
+                  />
+                </div>
+              </div>
+
+              <div class="pixel-card">
+                <h3>FULL RULES, HISTORY &amp; PRIVACY</h3>
+                <p style="color: var(--muted); margin-top: 8px">
+                  Power-user controls for custom endpoints, regex exclusions, clickable thread
+                  history, and transparent data disclosure.
+                </p>
+                <div class="callout-list">
+                  <div class="callout-row">
+                    <strong>RUNTIME HOST PERMISSIONS</strong>
+                    Requests host access only for the specific LLM API origin you actually choose,
+                    keeping default install permissions minimal.
+                  </div>
+                  <div class="callout-row">
+                    <strong>LINE-BY-LINE REGEX FILTERS</strong>
+                    Skip utility prompts automatically using standard case-insensitive regular
+                    expressions.
+                  </div>
+                  <div class="callout-row">
+                    <strong>200-ITEM CLICKABLE RENAME LOG</strong>
+                    Every renamed thread links directly back to
+                    <code>perplexity.ai/search/&lt;backend_uuid&gt;</code> and can be cleared in one
+                    click.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 10 Providers + Zero-Key Offline Mode -->
+      <section id="providers">
+        <div class="container">
+          <div class="section-head">
+            <div class="section-kicker">Bring Your Own Key — Or No Key At All</div>
+            <h2 class="section-title">10 LLM PROVIDERS + OFFLINE FALLBACK</h2>
+            <p class="section-desc">
+              Click any provider below to inspect its preconfigured fast model, wire protocol, and
+              built-in reasoning-budget safeguards. Don’t want to configure an API key? The offline
+              keyword heuristic works out of the box.
+            </p>
+          </div>
+
+          <div class="providers-layout">
+            <div class="provider-grid" id="provider-grid" aria-label="Supported LLM Providers"></div>
+
+            <aside class="pixel-card provider-detail" aria-live="polite">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px">
+                <h3 id="prov-detail-name" style="font-size: 16px">Groq</h3>
+                <span class="badge ok" id="prov-detail-badge">DEFAULT</span>
+              </div>
+
+              <table class="kv-table">
+                <tbody>
+                  <tr>
+                    <th>Default Model</th>
+                    <td><code id="prov-detail-model">openai/gpt-oss-20b</code></td>
+                  </tr>
+                  <tr>
+                    <th>Key Needed</th>
+                    <td id="prov-detail-key">API key (free tier available)</td>
+                  </tr>
+                  <tr>
+                    <th>Endpoint</th>
+                    <td><code id="prov-detail-endpoint">https://api.groq.com/openai/v1/chat/completions</code></td>
+                  </tr>
+                  <tr>
+                    <th>Wire Protocol</th>
+                    <td id="prov-detail-protocol">OpenAI Chat Completions + Bearer token</td>
+                  </tr>
+                  <tr>
+                    <th>Adapter Smarts</th>
+                    <td id="prov-detail-quirk" style="color: var(--text-soft)"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3-World Chrome MV3 Architecture -->
+      <section id="architecture">
+        <div class="container">
+          <div class="section-head">
+            <div class="section-kicker">Engineering &amp; Security Deep-Dive</div>
+            <h2 class="section-title">3-WORLD MV3 STREAM ARCHITECTURE</h2>
+            <p class="section-desc">
+              Zero brittle DOM scraping and zero API-key exposure. Auto-Rename clones Perplexity’s
+              SSE stream at the network boundary via <code>Response.body.tee()</code> while locking
+              your API key strictly inside the background Service Worker.
+            </p>
+          </div>
+
+          <div class="arch-diagram-box">
+            <img
+              src="assets/architecture.svg"
+              alt="3-World Chrome Manifest V3 Architecture Diagram"
+            />
+          </div>
+
+          <div class="worlds-grid">
+            <article class="world-card">
+              <span class="badge cyan">WORLD 1 · MAIN</span>
+              <h3>STREAM TEE &amp; RENAME BRIDGE</h3>
+              <p>
+                <code>page.js</code> wraps <code>window.fetch</code> at
+                <code>document_start</code>, splits <code>/rest/sse/perplexity_ask</code> via
+                <code>response.body.tee()</code> so Perplexity’s UI streams at native speed, and
+                submits same-origin <code>set_thread_title</code> (<code>HTTP 204</code>). Has zero
+                access to storage or API keys.
+              </p>
+            </article>
+
+            <article class="world-card">
+              <span class="badge ok">WORLD 2 · ISOLATED</span>
+              <h3>DECISION GATE &amp; SHADOW HUD</h3>
+              <p>
+                <code>content.js</code> evaluates <code>shouldRename()</code> (skipping follow-ups,
+                manual edits, and regex exclusions), renders the isolated Shadow-DOM pixel HUD, and
+                coordinates bounded <code>600ms / 1800ms</code> retry backoff on transient 5xx
+                errors.
+              </p>
+            </article>
+
+            <article class="world-card">
+              <span class="badge warn">WORLD 3 · SERVICE WORKER</span>
+              <h3>EXCLUSIVE API KEY VAULT</h3>
+              <p>
+                <code>background.js</code> is the <strong>only module in the codebase</strong> that
+                calls <code>getApiKey()</code> (enforced by automated tests). Calls your chosen LLM
+                with a 10s <code>AbortController</code>, strips <code>&lt;think&gt;</code> tags, and
+                falls back cleanly to <code>heuristicTitle()</code>.
+              </p>
+            </article>
+          </div>
+
+          <div class="code-panel">
+            <div class="code-panel-bar">
+              <span>SRC/PAGE/INJECT.JS — NON-DESTRUCTIVE STREAM CLONING</span>
+              <button
+                type="button"
+                class="btn sm"
+                data-copy="const response = await originalFetch.apply(this, args);&#10;if (isAskSseRequest &amp;&amp; response.ok &amp;&amp; response.body?.tee) {&#10;  const [pageBranch, observerBranch] = response.body.tee();&#10;  observeAskStream(observerBranch, requestMeta);&#10;  return new Response(pageBranch, {&#10;    status: response.status,&#10;    statusText: response.statusText,&#10;    headers: response.headers,&#10;  });&#10;}"
+              >
+                COPY SNIPPET
+              </button>
+            </div>
+            <pre><code>const response = await originalFetch.apply(this, args);
+
+if (isAskSseRequest &amp;&amp; response.ok &amp;&amp; response.body?.tee) {
+  const [pageBranch, observerBranch] = response.body.tee();
+
+  // Branch 2 assembles SSE frames asynchronously without touching UI rendering
+  observeAskStream(observerBranch, requestMeta);
+
+  // Branch 1 returns immediately to Perplexity's React app at native speed
+  return new Response(pageBranch, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: response.headers,
+  });
+}</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- 60-Second Install Guide -->
+      <section id="install">
+        <div class="container">
+          <div class="section-head">
+            <div class="section-kicker">Get Started</div>
+            <h2 class="section-title">INSTALL IN 60 SECONDS</h2>
+            <p class="section-desc">
+              Works in Google Chrome, Brave, Arc, Microsoft Edge, Vivaldi, and any Chromium browser
+              supporting Manifest V3.
+            </p>
+          </div>
+
+          <div class="install-grid">
+            <div class="pixel-card">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px">
+                <h3>OPTION A · PREBUILT RELEASE ZIP</h3>
+                <span class="badge ok">NO NODE.JS NEEDED</span>
+              </div>
+
+              <div class="step-list">
+                <div class="step-item">
+                  <span class="step-num">1</span>
+                  <div>
+                    Download
+                    <a
+                      href="releases/auto-rename-for-perplexity-v0.1.0.zip"
+                      download="auto-rename-for-perplexity-v0.1.0.zip"
+                      ><strong>auto-rename-for-perplexity-v0.1.0.zip</strong></a
+                    >
+                    and unzip it into a folder on your computer.
+                  </div>
+                </div>
+
+                <div class="step-item">
+                  <span class="step-num">2</span>
+                  <div>
+                    Open <code>chrome://extensions</code> in your browser and flip on
+                    <strong>Developer mode</strong> (top-right corner).
+                  </div>
+                </div>
+
+                <div class="step-item">
+                  <span class="step-num">3</span>
+                  <div>
+                    Click <strong>Load unpacked</strong> and select the unzipped folder (the one
+                    containing <code>manifest.json</code>). Done!
+                  </div>
+                </div>
+              </div>
+
+              <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px">
+                <a
+                  href="releases/auto-rename-for-perplexity-v0.1.0.zip"
+                  download="auto-rename-for-perplexity-v0.1.0.zip"
+                  class="btn primary"
+                >
+                  ⬇ DOWNLOAD V0.1.0 (.ZIP)
+                </a>
+                <button type="button" class="btn" data-copy="chrome://extensions">
+                  COPY CHROME://EXTENSIONS
+                </button>
+              </div>
+            </div>
+
+            <div class="pixel-card">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px">
+                <h3>OPTION B · BUILD FROM SOURCE</h3>
+                <span class="badge cyan">ZERO RUNTIME DEPS</span>
+              </div>
+
+              <p style="color: var(--muted); margin: 12px 0">
+                Clone the repository, bundle all 5 entrypoints with <code>esbuild</code> in ~30ms,
+                verify all 53 tests, and load the <code>extension/</code> folder unpacked:
+              </p>
+
+              <div class="code-panel">
+                <div class="code-panel-bar">
+                  <span>TERMINAL</span>
+                  <button
+                    type="button"
+                    class="btn sm"
+                    data-copy="git clone https://github.com/auto-rename-for-perplexity/auto-rename-for-perplexity.git&#10;cd auto-rename-for-perplexity&#10;npm install&#10;npm run build &amp;&amp; npm test"
+                  >
+                    COPY COMMANDS
+                  </button>
+                </div>
+                <pre><code>git clone https://github.com/&lt;your-username&gt;/auto-rename-for-perplexity.git
+cd auto-rename-for-perplexity
+npm install
+npm run build &amp;&amp; npm test</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FAQ -->
+      <section id="faq">
+        <div class="container">
+          <div class="section-head">
+            <div class="section-kicker">Questions &amp; Answers</div>
+            <h2 class="section-title">FREQUENTLY ASKED QUESTIONS</h2>
+          </div>
+
+          <div class="faq-list">
+            <details class="faq-item" open>
+              <summary>DOES THIS CHANGE PERPLEXITY.AI’S FONTS, THEME, OR PAGE LAYOUT?</summary>
+              <div class="faq-body">
+                <strong>No.</strong> Perplexity’s website layout, fonts, and CSS remain 100%
+                untouched. Only the extension’s own toolbar popup, settings page, and isolated
+                Shadow-DOM bottom-right status toast use the retro pixel HUD theme—and the toast can
+                be disabled anytime with one click.
+              </div>
+            </details>
+
+            <details class="faq-item">
+              <summary>WHERE IS MY LLM API KEY STORED, AND CAN WEBSITES READ IT?</summary>
+              <div class="faq-body">
+                Your API key is stored locally on your device in <code>chrome.storage.local</code>
+                and read <strong>exclusively</strong> inside the extension’s background MV3 Service
+                Worker (<code>src/background/service-worker.js</code>). Neither
+                <code>perplexity.ai</code> nor content scripts nor even the popup DOM ever read back
+                the raw key string. Zero developer servers or analytics exist.
+              </div>
+            </details>
+
+            <details class="faq-item">
+              <summary>CAN I USE IT COMPLETELY FREE WITHOUT AN API KEY?</summary>
+              <div class="faq-body">
+                <strong>Yes!</strong> Out of the box with no API key saved, Auto-Rename uses its
+                built-in offline keyword heuristic (<code>heuristicTitle()</code>) to generate clean
+                3–7 word titles locally with zero network requests. You can also use free-tier keys
+                from Groq, Google AI Studio (Gemini), OpenRouter <code>:free</code> models, or a
+                local Ollama server.
+              </div>
+            </details>
+
+            <details class="faq-item">
+              <summary>WILL IT OVERWRITE TITLES I RENAME MANUALLY OR ON FOLLOW-UP QUESTIONS?</summary>
+              <div class="faq-body">
+                <strong>Never.</strong> Follow-up messages and related-query clicks are skipped
+                automatically via <code>last_backend_uuid</code> and
+                <code>is_related_query</code>. And if you manually rename a thread in Perplexity’s
+                sidebar, the extension detects that request and locks out auto-renaming for that
+                thread permanently.
+              </div>
+            </details>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+      <div class="container">
+        <div class="footer-row">
+          <div style="display: flex; align-items: center; gap: 12px">
+            <img
+              src="assets/logo.svg"
+              width="36"
+              height="36"
+              alt="Auto-Rename for Perplexity pixel logo"
+              class="pixel-crisp"
+            />
+            <div>
+              <div class="nav-brand-title">AUTO-RENAME FOR PERPLEXITY</div>
+              <div style="font-size: 13.5px; color: var(--muted)">
+                Crisp 3–7 word thread titles · Chrome Manifest V3 · MIT License
+              </div>
+            </div>
+          </div>
+
+          <div class="footer-links">
+            <a
+              href="releases/auto-rename-for-perplexity-v0.1.0.zip"
+              download="auto-rename-for-perplexity-v0.1.0.zip"
+              >DOWNLOAD V0.1.0</a
+            >
+            <a href="#architecture">ARCHITECTURE</a>
+            <a href="privacy-policy.html">PRIVACY POLICY</a>
+            <a href="#install">INSTALL GUIDE</a>
+          </div>
+        </div>
+
+        <div class="footer-disclaimer">
+          <span>
+            Independent open-source project. Not affiliated with, endorsed by, or sponsored by
+            Perplexity AI, Inc.
+          </span>
+          <span>
+            Bundled fonts: Silkscreen &amp; Pixelify Sans (SIL Open Font License 1.1).
+          </span>
+        </div>
+      </div>
+    </footer>
+
+    <script src="site.js"></script>
+  </body>
+</html>

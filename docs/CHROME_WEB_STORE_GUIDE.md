@@ -158,7 +158,7 @@ Disclaimer: Auto-Rename for Perplexity is an independent open-source extension a
 - **Marquee Promo Tile (`1400×560`):** Leave blank (optional; only used if Google editorial features the extension).
 
 ### Additional Fields
-- **Official URL / Homepage URL:** Your GitHub repository URL (optional).
+- **Official URL / Homepage URL:** `https://perplexity-autorename.vercel.app`
 - **Support URL:** Your GitHub Issues URL (e.g., `https://github.com/<you>/<repo>/issues`).
 - **Mature content:** Select **No**.
 
@@ -207,7 +207,7 @@ Then check **ALL THREE** mandatory certifications at the bottom of Data Usage:
 - [x] *I do not use or transfer user data to determine creditworthiness or for lending purposes.*
 
 ### 4. Privacy Policy URL
-- Paste your live HTTPS URL from **Step 2** (e.g., `https://<username>.github.io/<repo>/privacy-policy.html`).
+- Paste your live HTTPS Privacy Policy URL: `https://perplexity-autorename.vercel.app/privacy-policy.html` (or your GitHub Pages equivalent).
 
 Click **Save draft**.
 

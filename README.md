@@ -6,17 +6,28 @@
 
 **Automatically renames every new Perplexity thread to a crisp, scannable 3–7 word title the moment its first answer finishes streaming.**
 
+[![Website](docs/assets/badges/website.svg)](https://perplexity-autorename.vercel.app)
 [![Manifest V3](docs/assets/badges/manifest-v3.svg)](#how-it-actually-works-deep-dive)
 [![Providers](docs/assets/badges/providers.svg)](#supported-llm-providers)
 [![Tests](docs/assets/badges/tests.svg)](#development-building--testing)
-[![Privacy](docs/assets/badges/telemetry.svg)](docs/PRIVACY_POLICY.md)
+[![Privacy](docs/assets/badges/telemetry.svg)](https://perplexity-autorename.vercel.app/privacy-policy.html)
 [![License: MIT](docs/assets/badges/license.svg)](LICENSE)
+
+[**Live Website & Interactive Simulator ↗**](https://perplexity-autorename.vercel.app) · [**Download v0.1.0 (.zip)**](https://perplexity-autorename.vercel.app/releases/auto-rename-for-perplexity-v0.1.0.zip) · [**60-Second Install**](#quick-start-install-unpacked-in-60-seconds) · [**Architecture Deep-Dive**](#how-it-actually-works-deep-dive) · [**Privacy Policy**](https://perplexity-autorename.vercel.app/privacy-policy.html)
 
 <br />
 
-<img src="docs/assets/banner-social-1280x640.png" width="100%" alt="Auto-Rename for Perplexity Hero Banner" />
+<a href="https://perplexity-autorename.vercel.app">
+  <img src="docs/assets/banner-social-1280x640.png" width="100%" alt="Auto-Rename for Perplexity Hero Banner" />
+</a>
 
 </div>
+
+---
+
+## Live Interactive Demo
+
+Want to see how **Auto-Rename for Perplexity** behaves before installing? Try the live interactive stream & Pixel HUD simulator at **[perplexity-autorename.vercel.app](https://perplexity-autorename.vercel.app)** — test preset prompts, paste your own messy prompt or stack trace, add a `[Research]` prefix, and watch the `WATCHING STREAM_` → `✓ THREAD RENAMED` (`HTTP 204`) flow live in your browser.
 
 ---
 
@@ -87,7 +98,7 @@ Configure providers and host permissions, define line-by-line regular-expression
 ## Quick Start (Install Unpacked in 60 Seconds)
 
 ### Option A — Download the Prebuilt Release ZIP (No Node.js Needed)
-1. Download **`auto-rename-for-perplexity-v0.1.0.zip`** from the [Releases](../../releases) page and unzip it.
+1. Download **`auto-rename-for-perplexity-v0.1.0.zip`** from **[perplexity-autorename.vercel.app](https://perplexity-autorename.vercel.app/releases/auto-rename-for-perplexity-v0.1.0.zip)** or the GitHub [Releases](../../releases) page, and unzip it.
 2. Open `chrome://extensions` in Chrome / Brave / Arc / Edge and enable **Developer mode** (top right).
 3. Click **Load unpacked** and select the unzipped folder.
 
@@ -209,6 +220,8 @@ Modern fast/reasoning models have subtle API differences that break generic Open
 ```text
 .
 ├── build.mjs                      # esbuild bundler (background ESM + content/page/popup/options IIFE)
+├── serve-docs.mjs                 # Zero-dependency local preview server for the landing page
+├── vercel.json                    # Zero-config Vercel static deployment descriptor -> docs/
 ├── package.json                   # Zero runtime npm dependencies; esbuild devDependency only
 ├── extension/                     # Ready-to-load Chrome MV3 unpacked extension directory
 │   ├── manifest.json              # MV3 manifest ("storage" + perplexity.ai + optional LLM hosts)
@@ -238,12 +251,16 @@ Modern fast/reasoning models have subtle API differences that break generic Open
 │       └── providers/             # 10 LLM adapters (OpenAI-compat, Gemini, Anthropic, Zen, etc.)
 ├── tests/                         # 53 Node.js unit, provider, UI, security & E2E pipeline tests
 ├── store-assets/                  # Chrome Web Store 128x128 icon, 440x280 promo & 1280x800 shots
-└── docs/
-    ├── assets/                    # Pixel SVG logo, architecture diagram, banner & screenshots
+└── docs/                          # Live Website -> https://perplexity-autorename.vercel.app
+    ├── index.html                 # Interactive Pixel HUD Landing Page (Vercel & GitHub Pages ready)
+    ├── styles.css                 # Landing page & privacy policy pixel stylesheet
+    ├── site.js                    # Live stream/HUD simulator & 10-provider inspector
+    ├── releases/                  # Direct download copy of auto-rename-for-perplexity-v0.1.0.zip
+    ├── assets/                    # Pixel SVG logo, fonts, architecture diagram, banner & screenshots
     ├── FONT-LICENSES.md           # SIL Open Font License 1.1 notices for Silkscreen & Pixelify Sans
     ├── CHROME_WEB_STORE_GUIDE.md  # Full Chrome Web Store publishing guide (for future launch)
     ├── PRIVACY_POLICY.md          # Markdown privacy policy
-    └── privacy-policy.html        # Standalone static HTML privacy policy (GitHub Pages ready)
+    └── privacy-policy.html        # Live HTML privacy policy (/privacy-policy.html)
 ```
 
 ---
@@ -260,15 +277,19 @@ npm run build
 # Run all 53 automated tests
 npm test
 
+# Preview the landing page locally on http://localhost:4173
+npm run site
+
 # Package a clean release ZIP (manifest.json at archive root)
-(cd extension && zip -r ../auto-rename-for-perplexity-v0.1.0.zip . -x "*.DS_Store")
+npm run zip
 ```
 
 ---
 
-## Privacy, Font Licenses & Disclaimer
+## Links, Privacy, Font Licenses & Disclaimer
 
-- **Zero Developer Servers or Telemetry:** Nothing is ever sent to the extension author. API keys stay locally in `chrome.storage.local` and are read exclusively inside `src/background/service-worker.js`. See [`docs/PRIVACY_POLICY.md`](docs/PRIVACY_POLICY.md).
-- **Bundled Fonts:** `Silkscreen` and `Pixelify Sans` are bundled locally under the SIL Open Font License 1.1 (`docs/FONT-LICENSES.md`).
+- **Website & Interactive Demo:** [https://perplexity-autorename.vercel.app](https://perplexity-autorename.vercel.app)
+- **Privacy Policy:** [https://perplexity-autorename.vercel.app/privacy-policy.html](https://perplexity-autorename.vercel.app/privacy-policy.html) (also in [`docs/PRIVACY_POLICY.md`](docs/PRIVACY_POLICY.md)) — Zero developer servers or telemetry; API keys stay locally in `chrome.storage.local` and are read exclusively inside `src/background/service-worker.js`.
+- **Bundled Fonts:** `Silkscreen` and `Pixelify Sans` are bundled locally under the SIL Open Font License 1.1 ([`docs/FONT-LICENSES.md`](docs/FONT-LICENSES.md)).
 - **Disclaimer:** **Auto-Rename for Perplexity** is an independent open-source project and is **not affiliated with, endorsed by, or sponsored by Perplexity AI, Inc.**
 - **License:** [MIT License](LICENSE).

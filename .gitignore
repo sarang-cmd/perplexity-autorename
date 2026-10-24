@@ -1,7 +1,6 @@
 node_modules/
+.vercel/
 .DS_Store
-Thumbs.db
 *.log
-*.zip
-.env
-.env.*
+/*.zip
+!docs/releases/*.zip
