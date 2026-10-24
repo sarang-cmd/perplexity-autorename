@@ -1,0 +1,16 @@
+{
+  "name": "auto-rename-for-perplexity",
+  "version": "0.1.0",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "description": "Chrome MV3 extension that automatically renames new Perplexity threads after the first answer completes.",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --test tests/*.test.js",
+    "zip": "node build.mjs && cd extension && zip -r ../auto-rename-for-perplexity-v0.1.0.zip . -x '*.DS_Store'"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  }
+}

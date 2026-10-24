@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Privacy Policy — Auto-Rename for Perplexity</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #f8fafc;
+        --card: #ffffff;
+        --border: #e2e8f0;
+        --text: #0f172a;
+        --muted: #475569;
+        --accent: #0d9488;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0b1218;
+          --card: #121d26;
+          --border: #223342;
+          --text: #f1f5f9;
+          --muted: #94a3b8;
+          --accent: #2dd4bf;
+        }
+      }
+      body {
+        margin: 0;
+        padding: 40px 16px 72px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.65;
+      }
+      main {
+        max-width: 760px;
+        margin: 0 auto;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 32px 36px;
+      }
+      h1 { margin-top: 0; font-size: 1.75rem; }
+      h2 { margin-top: 28px; font-size: 1.15rem; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+      p, li { font-size: 0.96rem; }
+      .meta { color: var(--muted); font-size: 0.9rem; margin-bottom: 24px; }
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.88em;
+        padding: 1px 5px;
+        border-radius: 4px;
+        border: 1px solid var(--border);
+      }
+      a { color: var(--accent); }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Privacy Policy — Auto-Rename for Perplexity</h1>
+      <div class="meta">Effective Date: October 24, 2026</div>
+
+      <h2>1. Overview &amp; Single Purpose</h2>
+      <p>
+        <strong>Auto-Rename for Perplexity</strong> is a browser extension whose single purpose is to
+        automatically generate and save a concise 3–7 word thread title on
+        <code>https://www.perplexity.ai</code> once the first answer in a brand-new thread finishes streaming.
+      </p>
+      <p>
+        The developer operates <strong>no backend servers, databases, analytics, or telemetry</strong>.
+        All operations happen locally in your browser and directly between your browser and the LLM API
+        provider you choose to configure.
+      </p>
+
+      <h2>2. Data Accessed and Processed</h2>
+      <ul>
+        <li>
+          <strong>First Question &amp; Answer Excerpt (Website Content):</strong> When enabled on a new
+          Perplexity thread, up to the first 600 characters of your initial question and up to 1,200
+          characters of the completed first answer are read in memory and sent directly over HTTPS to your
+          configured LLM API endpoint solely to generate a 3–7 word title. Follow-up questions in existing
+          threads are skipped. If no API key is configured, a local keyword heuristic generates the title
+          entirely offline in your browser.
+        </li>
+        <li>
+          <strong>Same-Origin Perplexity Identifiers:</strong> Thread <code>context_uuid</code>,
+          <code>read_write_token</code>, and your Perplexity <code>user.id</code> (fetched same-origin from
+          <code>/api/auth/session</code>) are used exclusively to send the rename request to
+          <code>https://www.perplexity.ai/rest/thread/set_thread_title</code>. Session tokens, cookies, and
+          account IDs are never stored persistently or sent outside <code>www.perplexity.ai</code>.
+        </li>
+        <li>
+          <strong>Local Storage (<code>chrome.storage.local</code>):</strong> Your selected provider/model
+          preferences, API key (accessible only to the extension's background service worker), and up to
+          200 recent thread rename titles are stored locally on your device.
+        </li>
+      </ul>
+
+      <h2>3. Data Sharing &amp; Third Parties</h2>
+      <p>
+        The developer never collects, views, sells, or shares user data. Excerpts of the first Q&amp;A are
+        transmitted only to the LLM provider endpoint you explicitly configure (e.g., Groq, OpenRouter,
+        Gemini, OpenAI, Anthropic, Mistral, Cerebras, OpenCode Zen, Sarvam, or your custom endpoint),
+        governed by that provider's terms and privacy policy.
+      </p>
+
+      <h2>4. Chrome Web Store Limited Use Compliance</h2>
+      <p>
+        Use of information received from Chrome APIs complies with the
+        <a href="https://developer.chrome.com/docs/webstore/program-policies/user-data-faq/">Chrome Web Store User Data Policy</a>,
+        including the Limited Use requirements. Data is never used for advertising, profiling, or unrelated purposes.
+      </p>
+
+      <h2>5. User Control &amp; Deletion</h2>
+      <p>
+        You can disable automatic renaming at any time from the toolbar popup, delete stored API keys via
+        <strong>Clear Key</strong>, erase rename history via <strong>Clear History</strong> in Extension
+        Settings, or remove all local data permanently by uninstalling the extension.
+      </p>
+
+      <h2>6. Disclaimer</h2>
+      <p>
+        Independent project; not affiliated with, endorsed by, or sponsored by Perplexity AI, Inc.
+      </p>
+    </main>
+  </body>
+</html>

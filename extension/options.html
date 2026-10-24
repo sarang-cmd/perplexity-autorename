@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Auto-Rename for Perplexity — Settings</title>
+    <link rel="stylesheet" href="pixel-ui.css" />
+  </head>
+  <body class="options-page">
+    <div class="options-container">
+      <header class="brand-card">
+        <div class="brand-left">
+          <div id="options-logo-slot"></div>
+          <div>
+            <h1 class="brand-title" style="font-size: 14px">Auto-Rename for Perplexity</h1>
+            <div class="brand-sub">
+              Automatically titles new Perplexity threads (3-7 words) once the first answer finishes.
+            </div>
+          </div>
+        </div>
+        <span class="badge ok">MV3 · V0.1.0</span>
+      </header>
+
+      <!-- Live Last Rename Status -->
+      <section class="card" aria-labelledby="status-heading">
+        <h2 id="status-heading">Last Rename Activity</h2>
+        <div id="last-status-box" class="status-banner">
+          <div class="status-row">
+            <strong id="last-status-summary">No rename attempts recorded yet.</strong>
+            <span id="last-status-time" class="hint" style="margin: 0"></span>
+          </div>
+          <div id="last-status-detail" class="hint" style="margin: 0">
+            Open a fresh Perplexity tab and ask a new question to trigger auto-renaming.
+          </div>
+        </div>
+      </section>
+
+      <!-- LLM Provider Card -->
+      <section class="card" aria-labelledby="provider-heading">
+        <h2 id="provider-heading">LLM Provider</h2>
+
+        <div class="grid-2">
+          <div class="field">
+            <label for="provider-select">Provider</label>
+            <select id="provider-select"></select>
+          </div>
+
+          <div class="field">
+            <label for="model-input">Model</label>
+            <input id="model-input" type="text" spellcheck="false" autocomplete="off" />
+          </div>
+        </div>
+
+        <div id="custom-url-field" class="field hidden">
+          <label for="custom-url-input">Custom Base URL (OpenAI-Compatible)</label>
+          <input
+            id="custom-url-input"
+            type="url"
+            placeholder="https://example.com/v1"
+            spellcheck="false"
+            autocomplete="off"
+          />
+          <div class="hint">Must point to an OpenAI-compatible <code>/v1</code> or <code>/chat/completions</code> endpoint.</div>
+        </div>
+
+        <div class="field">
+          <div class="status-row" style="margin-bottom: 6px">
+            <label for="api-key-input" style="margin-bottom: 0">API Key</label>
+            <span id="key-status-badge" class="badge">CHECKING…</span>
+          </div>
+          <div class="inline-group">
+            <input
+              id="api-key-input"
+              type="password"
+              placeholder="Key saved - enter a new key to replace"
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <button id="clear-key-btn" type="button">Clear Key</button>
+          </div>
+          <div class="hint">
+            Keys are saved in <code>chrome.storage.local</code> and never exposed to web pages or content scripts.
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="status-row">
+            <div style="font-size: 13px">
+              <span style="font-family: 'PPX Silkscreen', monospace; font-size: 10px; color: #cbd5e1">HOST ACCESS:</span>
+              <span id="host-perm-badge" class="badge" style="margin-left: 6px">CHECKING…</span>
+              <span id="host-perm-origin" class="hint" style="margin-left: 6px"></span>
+            </div>
+            <button id="grant-perm-btn" type="button" class="hidden">Grant Host Access</button>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="save-btn" type="button" class="primary">Save Settings</button>
+          <button id="test-btn" type="button">Test Provider</button>
+        </div>
+
+        <div id="provider-feedback" class="feedback" role="status"></div>
+      </section>
+
+      <!-- Toaster & Rename Rules (No Website Pixel Theme Option) -->
+      <section class="card" aria-labelledby="rules-heading">
+        <h2 id="rules-heading">Toaster &amp; Rename Rules</h2>
+
+        <div class="field">
+          <label class="toggle-row" for="enabled-checkbox">
+            <span>Enable automatic renaming on new Perplexity threads</span>
+            <input id="enabled-checkbox" type="checkbox" />
+            <span class="switch-track"><span class="switch-thumb"></span></span>
+          </label>
+        </div>
+
+        <div class="field">
+          <label class="toggle-row" for="show-toast-checkbox">
+            <span>Bottom-Right Rename Toaster (live spinner &amp; confirmation toast)</span>
+            <input id="show-toast-checkbox" type="checkbox" />
+            <span class="switch-track"><span class="switch-thumb"></span></span>
+          </label>
+        </div>
+
+        <div class="field">
+          <label for="prefix-input">Optional Title Prefix</label>
+          <input
+            id="prefix-input"
+            type="text"
+            placeholder="e.g. [Research]"
+            autocomplete="off"
+          />
+          <div class="hint">Prepended before generated titles (leave blank for none).</div>
+        </div>
+
+        <div class="field">
+          <label for="exclude-textarea">Exclude Patterns (One Regex Per Line)</label>
+          <textarea
+            id="exclude-textarea"
+            placeholder="^define\b&#10;^translate\b"
+            spellcheck="false"
+          ></textarea>
+          <div id="regex-validation-msg" class="hint">
+            Questions matching any line will not be auto-renamed (case-insensitive by default).
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="toggle-row" for="debug-checkbox">
+            <span>Log provider fallback error details in browser console</span>
+            <input id="debug-checkbox" type="checkbox" />
+            <span class="switch-track"><span class="switch-thumb"></span></span>
+          </label>
+        </div>
+
+        <div class="actions">
+          <button id="save-rules-btn" type="button" class="primary">Save Rules</button>
+        </div>
+        <div id="rules-feedback" class="feedback" role="status"></div>
+      </section>
+
+      <!-- Rename History Card -->
+      <section class="card" aria-labelledby="history-heading">
+        <div class="status-row" style="margin-bottom: 12px">
+          <h2 id="history-heading" style="margin: 0">Recent Renames</h2>
+          <button id="clear-history-btn" type="button">Clear History</button>
+        </div>
+        <div id="history-empty" class="hint">No threads renamed yet.</div>
+        <table id="history-table" class="hidden">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Source</th>
+              <th>When</th>
+            </tr>
+          </thead>
+          <tbody id="history-tbody"></tbody>
+        </table>
+      </section>
+
+      <!-- Prominent In-Product Data Disclosure -->
+      <section class="card" aria-labelledby="privacy-heading">
+        <h2 id="privacy-heading">Data &amp; Privacy Disclosure</h2>
+        <div class="hint" style="margin: 0; font-size: 13px; line-height: 1.55">
+          When enabled on a brand-new Perplexity thread, only the first question (up to 600 chars)
+          and an excerpt of the first answer (up to 1,200 chars) are sent directly from your browser
+          to the LLM API endpoint you configure above solely to generate a 3-7 word thread title. Your API
+          key, settings, and rename history stay in <code>chrome.storage.local</code> on your device.
+          Zero backend servers, analytics, or telemetry. Independent project; not affiliated with Perplexity AI.
+        </div>
+      </section>
+    </div>
+
+    <script src="options.js"></script>
+  </body>
+</html>

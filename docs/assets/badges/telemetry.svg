@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="110" height="20" role="img" aria-label="Telemetry: Zero">
+  <rect width="110" height="20" rx="4" fill="#1e293b"/>
+  <rect x="68" width="42" height="20" rx="4" fill="#1e293b"/>
+  <rect x="68" width="4" height="20" fill="#1e293b"/>
+  <g fill="#f8fafc" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-size="11" font-weight="600">
+    <text x="34.0" y="14">Telemetry</text>
+    <text x="89.0" y="14">Zero</text>
+  </g>
+</svg>

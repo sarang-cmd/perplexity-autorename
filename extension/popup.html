@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PPX Auto-Rename</title>
+    <link rel="stylesheet" href="pixel-ui.css" />
+  </head>
+  <body class="popup-page">
+    <div class="popup-stack">
+      <!-- Brand Header + Master Toggle -->
+      <header class="brand-card">
+        <div class="brand-left">
+          <div id="popup-logo-slot"></div>
+          <div>
+            <h1 class="brand-title">PPX Auto-Rename</h1>
+            <div class="brand-sub">3-7 Word Thread Titler</div>
+          </div>
+        </div>
+        <label class="toggle-row header-toggle" for="popup-enabled">
+          <span id="popup-enabled-label">ON</span>
+          <input id="popup-enabled" type="checkbox" />
+          <span class="switch-track"><span class="switch-thumb"></span></span>
+        </label>
+      </header>
+
+      <!-- Live Last Rename Status -->
+      <div id="popup-status-box" class="status-banner">
+        <div class="status-row">
+          <strong id="popup-status-summary">No rename activity yet</strong>
+          <span id="popup-status-badge" class="badge">IDLE</span>
+        </div>
+        <div id="popup-status-detail" class="hint" style="margin: 0">
+          Ask a question in a fresh Perplexity tab to auto-rename.
+        </div>
+      </div>
+
+      <!-- Quick Provider & Key Configuration -->
+      <section class="card" aria-label="Provider & Key">
+        <h2>Provider &amp; Key</h2>
+
+        <div class="field">
+          <label for="popup-provider">Provider</label>
+          <select id="popup-provider"></select>
+        </div>
+
+        <div class="field">
+          <label for="popup-model">Model</label>
+          <input id="popup-model" type="text" spellcheck="false" autocomplete="off" />
+        </div>
+
+        <div id="popup-custom-url-wrap" class="field hidden">
+          <label for="popup-custom-url">Custom Base URL</label>
+          <input
+            id="popup-custom-url"
+            type="url"
+            placeholder="https://example.com/v1"
+            spellcheck="false"
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="field">
+          <div class="status-row" style="margin-bottom: 5px">
+            <label for="popup-api-key" style="margin-bottom: 0">API Key</label>
+            <span id="popup-key-badge" class="badge">…</span>
+          </div>
+          <input
+            id="popup-api-key"
+            type="password"
+            placeholder="Paste API key"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </div>
+
+        <div class="actions" style="margin-top: 10px; gap: 8px">
+          <button id="popup-save-btn" type="button" class="primary" style="flex: 1">
+            Save
+          </button>
+          <button id="popup-test-btn" type="button" style="flex: 1">
+            Test LLM
+          </button>
+        </div>
+
+        <div id="popup-feedback" class="feedback" role="status"></div>
+      </section>
+
+      <!-- Toaster & Prefix (No Website Theme Option) -->
+      <section class="card" aria-label="Toaster & Prefix">
+        <h2>Toaster &amp; Prefix</h2>
+
+        <div class="field">
+          <label class="toggle-row" for="popup-show-toast">
+            <span>Bottom-Right Rename Toaster</span>
+            <input id="popup-show-toast" type="checkbox" />
+            <span class="switch-track"><span class="switch-thumb"></span></span>
+          </label>
+        </div>
+
+        <div class="field" style="margin-bottom: 0">
+          <label for="popup-prefix">Title Prefix (Optional)</label>
+          <input
+            id="popup-prefix"
+            type="text"
+            placeholder="e.g. [Research]"
+            autocomplete="off"
+          />
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="popup-footer">
+        <div class="inline-group" style="gap: 6px">
+          <span id="popup-perm-badge" class="badge">HOST …</span>
+          <button id="popup-grant-btn" type="button" class="hidden" style="padding: 5px 10px; font-size: 9.5px">
+            Grant Access
+          </button>
+        </div>
+        <button id="popup-open-options" type="button" style="padding: 6px 12px; font-size: 9.5px">
+          Full Settings ↗
+        </button>
+      </footer>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
