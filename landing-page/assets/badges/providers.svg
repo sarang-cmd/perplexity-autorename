@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="224" height="20" role="img" aria-label="LLM Providers: 10 + Offline Fallback">
+  <rect width="224" height="20" rx="4" fill="#1e293b"/>
+  <rect x="92" width="132" height="20" rx="4" fill="#0d9488"/>
+  <rect x="92" width="4" height="20" fill="#0d9488"/>
+  <g fill="#f8fafc" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-size="11" font-weight="600">
+    <text x="46.0" y="14">LLM Providers</text>
+    <text x="158.0" y="14">10 + Offline Fallback</text>
+  </g>
+</svg>

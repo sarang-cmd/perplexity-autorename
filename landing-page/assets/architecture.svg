@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="430" viewBox="0 0 980 430" fill="none" role="img" aria-label="Auto-Rename for Perplexity MV3 Architecture Diagram">
+  <style>
+    .bg { fill: #0b1218; }
+    .lane { fill: #111c25; stroke: #223444; stroke-width: 1.5; }
+    .box { fill: #162531; stroke: #2c4457; stroke-width: 1.5; }
+    .box-accent { fill: #112e2d; stroke: #2dd4bf; stroke-width: 1.5; }
+    .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13px; font-weight: 700; fill: #f1f5f9; }
+    .lane-hdr { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; fill: #2dd4bf; }
+    .sub { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 11px; fill: #94a3b8; }
+    .step { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11px; font-weight: 600; fill: #cbd5e1; }
+    .badge { fill: #0d9488; }
+    .badge-txt { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 10px; font-weight: 700; fill: #ffffff; }
+    .arrow { stroke: #2dd4bf; stroke-width: 1.75; fill: none; }
+    .arrow-muted { stroke: #64748b; stroke-width: 1.5; stroke-dasharray: 4 4; fill: none; }
+  </style>
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2dd4bf"/>
+    </marker>
+    <marker id="ahm" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <rect width="980" height="430" rx="16" class="bg"/>
+
+  <!-- Column 1: MAIN World -->
+  <rect x="24" y="24" width="290" height="382" rx="12" class="lane"/>
+  <text x="42" y="48" class="lane-hdr">1 · PAGE "MAIN" WORLD (page.js)</text>
+  <text x="42" y="65" class="sub">Shares window.fetch &amp; Perplexity cookies</text>
+
+  <rect x="42" y="84" width="254" height="76" rx="9" class="box"/>
+  <circle cx="58" cy="104" r="9" class="badge"/><text x="55" y="108" class="badge-txt">1</text>
+  <text x="74" y="108" class="title">Intercept perplexity_ask</text>
+  <text x="42" y="128" class="sub" dx="14">response.body.tee() clones stream</text>
+  <text x="42" y="145" class="sub" dx="14">Zero delay to Perplexity UI</text>
+
+  <rect x="42" y="178" width="254" height="84" rx="9" class="box"/>
+  <circle cx="58" cy="198" r="9" class="badge"/><text x="55" y="202" class="badge-txt">2</text>
+  <text x="74" y="202" class="title">Pure SSE Frame Assembler</text>
+  <text x="42" y="222" class="sub" dx="14">Extracts context_uuid, r/w token,</text>
+  <text x="42" y="238" class="sub" dx="14">WORKFLOW_ITEM_TEXT (answer)</text>
+  <text x="42" y="253" class="sub" dx="14">Detects manual user renames</text>
+
+  <rect x="42" y="284" width="254" height="100" rx="9" class="box-accent"/>
+  <circle cx="58" cy="305" r="9" class="badge"/><text x="55" y="309" class="badge-txt">5</text>
+  <text x="74" y="309" class="title">Same-Origin Rename Bridge</text>
+  <text x="42" y="329" class="sub" dx="14">GET /api/auth/session → user.id</text>
+  <text x="42" y="346" class="sub" dx="14">POST /rest/thread/set_thread_title</text>
+  <text x="42" y="363" class="sub" dx="14">x-pplx-account header → HTTP 204</text>
+
+  <!-- Column 2: ISOLATED World -->
+  <rect x="345" y="24" width="290" height="382" rx="12" class="lane"/>
+  <text x="363" y="48" class="lane-hdr">2 · ISOLATED WORLD (content.js)</text>
+  <text x="363" y="65" class="sub">No API key access · Orchestrates state</text>
+
+  <rect x="363" y="116" width="254" height="114" rx="9" class="box"/>
+  <circle cx="379" cy="136" r="9" class="badge"/><text x="376" y="140" class="badge-txt">3</text>
+  <text x="395" y="140" class="title">Rename Decision Engine</text>
+  <text x="363" y="161" class="sub" dx="14">• First answer only (skips follow-ups)</text>
+  <text x="363" y="178" class="sub" dx="14">• Never overwrites manual edits</text>
+  <text x="363" y="195" class="sub" dx="14">• Checks regex exclude patterns</text>
+  <text x="363" y="212" class="sub" dx="14">• Retries 5xx/network up to 2×</text>
+
+  <rect x="363" y="264" width="254" height="104" rx="9" class="box"/>
+  <text x="379" y="289" class="title">Shadow-DOM Rename Toast</text>
+  <text x="363" y="310" class="sub" dx="16">#ppx-autorename-toast (open shadow)</text>
+  <text x="363" y="327" class="sub" dx="16">Hidden when idle · No page CSS leak</text>
+  <text x="363" y="344" class="sub" dx="16">Shows spinner → "Thread renamed"</text>
+
+  <!-- Column 3: Service Worker -->
+  <rect x="666" y="24" width="290" height="382" rx="12" class="lane"/>
+  <text x="684" y="48" class="lane-hdr">3 · MV3 SERVICE WORKER (background.js)</text>
+  <text x="684" y="65" class="sub">Sole reader of API keys in storage</text>
+
+  <rect x="684" y="92" width="254" height="118" rx="9" class="box-accent"/>
+  <circle cx="700" cy="112" r="9" class="badge"/><text x="697" y="116" class="badge-txt">4</text>
+  <text x="716" y="116" class="title">Title Generator + Fallback</text>
+  <text x="684" y="137" class="sub" dx="14">Sends Q (≤600c) + A (≤1200c) to</text>
+  <text x="684" y="154" class="sub" dx="14">Groq / OpenRouter / Gemini /</text>
+  <text x="684" y="171" class="sub" dx="14">OpenAI / Anthropic / Local URL</text>
+  <text x="684" y="188" class="sub" dx="14">Offline keyword fallback on error</text>
+
+  <rect x="684" y="236" width="254" height="72" rx="9" class="box"/>
+  <text x="700" y="260" class="title">chrome.storage.local</text>
+  <text x="684" y="280" class="sub" dx="16">API keys isolated to Service Worker</text>
+  <text x="684" y="296" class="sub" dx="16">Settings + 200-item rename history</text>
+
+  <rect x="684" y="326" width="254" height="62" rx="9" class="box"/>
+  <text x="700" y="350" class="title">Popup &amp; Options UI</text>
+  <text x="684" y="369" class="sub" dx="16">Uses hasApiKey / setApiKey only</text>
+
+  <!-- Arrows -->
+  <path d="M 169 160 L 169 175" class="arrow" marker-end="url(#ah)"/>
+  <path d="M 296 212 L 360 175" class="arrow" marker-end="url(#ah)"/>
+  <text x="303" y="182" class="step">postMessage</text>
+
+  <path d="M 617 155 L 681 155" class="arrow" marker-end="url(#ah)"/>
+  <text x="622" y="146" class="step">sendMessage</text>
+
+  <path d="M 681 182 L 617 182" class="arrow" marker-end="url(#ah)"/>
+  <text x="625" y="198" class="step">3–7w title</text>
+
+  <path d="M 363 205 L 298 318" class="arrow" marker-end="url(#ah)"/>
+  <path d="M 490 230 L 490 261" class="arrow-muted" marker-end="url(#ahm)"/>
+  <path d="M 811 236 L 811 213" class="arrow-muted" marker-end="url(#ahm)"/>
+</svg>
