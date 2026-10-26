@@ -1,0 +1,26 @@
+{
+  "name": "Auto-Rename for Perplexity",
+  "short_name": "PPX Auto-Rename",
+  "description": "Open-source Chrome MV3 extension that automatically renames new Perplexity.ai threads to crisp 3–7 word titles once the first answer streams.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#091318",
+  "theme_color": "#091318",
+  "icons": [
+    {
+      "src": "/assets/icon-48.png",
+      "sizes": "48x48",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

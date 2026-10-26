@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>How to Organize Perplexity Library &amp; Search History (Prefixes, Regex &amp; Auto-Titles) | Auto-Rename for Perplexity</title>
+    <meta name="description" content="Turn a cluttered Perplexity.ai Library into a searchable knowledge base using automatic 3–7 word titles, custom project prefixes like [Research] or [Bug], and regex exclude rules." />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="google-site-verification" content="7qXtBUikHAi5IxiEi94jbzxAAUfIvy1K3-osMQS-E_M" />
+    <link rel="canonical" href="https://perplexity-autorename.vercel.app/organize-perplexity-library/" />
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="https://perplexity-autorename.vercel.app/sitemap.xml" />
+    <meta property="og:site_name" content="Auto-Rename for Perplexity" />
+    <meta property="og:title" content="How to Organize Perplexity Library &amp; Search History (Prefixes, Regex &amp; Auto-Titles) | Auto-Rename for Perplexity" />
+    <meta property="og:description" content="Turn a cluttered Perplexity.ai Library into a searchable knowledge base using automatic 3–7 word titles, custom project prefixes like [Research] or [Bug], and regex exclude rules." />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="https://perplexity-autorename.vercel.app/organize-perplexity-library/" />
+    <meta property="og:image" content="https://perplexity-autorename.vercel.app/assets/banner-social-1280x640.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="How to Organize Perplexity Library &amp; Search History (Prefixes, Regex &amp; Auto-Titles) | Auto-Rename for Perplexity" />
+    <meta name="twitter:description" content="Turn a cluttered Perplexity.ai Library into a searchable knowledge base using automatic 3–7 word titles, custom project prefixes like [Research] or [Bug], and regex exclude rules." />
+    <meta name="twitter:image" content="https://perplexity-autorename.vercel.app/assets/banner-social-1280x640.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="../assets/icon-48.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="../assets/icon-192.png" />
+    <link rel="icon" type="image/svg+xml" href="../assets/logo.svg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="../assets/apple-touch-icon.png" />
+    <link rel="manifest" href="../site.webmanifest" />
+    <meta name="theme-color" content="#091318" />
+    <link rel="stylesheet" href="../styles.css" />
+    <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"SoftwareApplication","@id":"https://perplexity-autorename.vercel.app/#software","name":"Auto-Rename for Perplexity","alternateName":["PPX Auto-Rename","Perplexity Auto-Rename Extension","Perplexity Thread Auto-Renamer"],"applicationCategory":"BrowserApplication","applicationSubCategory":"ProductivityExtension","operatingSystem":"Chrome, Brave, Arc, Microsoft Edge, Vivaldi, Opera (Chromium Manifest V3)","softwareVersion":"0.1.0","isAccessibleForFree":true,"license":"https://opensource.org/licenses/MIT","url":"https://perplexity-autorename.vercel.app/","downloadUrl":"https://perplexity-autorename.vercel.app/releases/auto-rename-for-perplexity-v0.1.0.zip","installUrl":"https://perplexity-autorename.vercel.app/?download=1#install","codeRepository":"https://github.com/sarang-cmd/perplexity-autorename","screenshot":["https://perplexity-autorename.vercel.app/assets/screenshots/02-toast-renamed.png","https://perplexity-autorename.vercel.app/assets/screenshots/03-toolbar-popup.png","https://perplexity-autorename.vercel.app/assets/screenshots/04-settings-full.png"],"featureList":["Automatically renames new Perplexity.ai threads to crisp 3-7 word titles after the first answer streams","Supports 10 LLM providers (Groq, OpenRouter, Gemini, OpenAI, Anthropic, Mistral, DeepSeek, Sarvam, OpenCode Zen, Ollama)","100% offline zero-key heuristic fallback title generator","Optional custom title prefixes (e.g. [Research], [Bug]) and regex exclude patterns","Isolated Shadow-DOM pixel HUD toaster notification on perplexity.ai","Never overwrites manual thread edits or follow-up questions"],"offers":{"@type":"Offer","price":"0","priceCurrency":"USD","availability":"https://schema.org/InStock"},"author":{"@type":"Person","name":"sarang-cmd","url":"https://github.com/sarang-cmd"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://perplexity-autorename.vercel.app/"},{"@type":"ListItem","position":2,"name":"Guides & Fixes","item":"https://perplexity-autorename.vercel.app/guides/"},{"@type":"ListItem","position":3,"name":"Organize Perplexity Library & History","item":"https://perplexity-autorename.vercel.app/organize-perplexity-library/"}]},{"@type":"TechArticle","headline":"How to Organize Perplexity Library & Search History (Prefixes, Regex & Auto-Titles)","description":"Turn a cluttered Perplexity.ai Library into a searchable knowledge base using automatic 3–7 word titles, custom project prefixes like [Research] or [Bug], and regex exclude rules.","datePublished":"2026-10-24","dateModified":"2026-10-26","mainEntityOfPage":"https://perplexity-autorename.vercel.app/organize-perplexity-library/","image":"https://perplexity-autorename.vercel.app/assets/banner-social-1280x640.png","author":{"@type":"Person","name":"sarang-cmd","url":"https://github.com/sarang-cmd"},"about":{"@id":"https://perplexity-autorename.vercel.app/#software"}},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Do renamed titles sync to the Perplexity mobile app and Library search?","acceptedAnswer":{"@type":"Answer","text":"Yes. Because Auto-Rename updates the thread via Perplexity's own server-side title endpoint (HTTP 204), the clean 3–7 word title persists across web reloads, Library search, and mobile devices signed into your Perplexity account."}},{"@type":"Question","name":"What happens if I type an invalid regular expression in Exclude Patterns?","acceptedAnswer":{"@type":"Answer","text":"Auto-Rename compiles each regex safely inside a guard and ignores malformed expressions without crashing or blocking valid patterns."}},{"@type":"Question","name":"Does Auto-Rename touch old threads in my Perplexity Library?","acceptedAnswer":{"@type":"Answer","text":"No. It only names new threads at the moment their first answer finishes streaming, so your existing archived threads and manually curated titles are never modified."}}]}]}</script>
+    <script>
+      window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container nav-bar">
+        <a href="../index.html" class="nav-brand">
+          <img
+            src="../assets/logo.svg"
+            width="36"
+            height="36"
+            alt="Auto-Rename for Perplexity pixel logo"
+            class="pixel-crisp"
+          />
+          <div>
+            <span class="nav-brand-title">PPX AUTO-RENAME</span>
+            <span class="nav-brand-sub">3–7 Word Perplexity Thread Titler</span>
+          </div>
+        </a>
+
+        <nav class="nav-links" aria-label="Primary">
+          <a href="../index.html#why">Before / After</a>
+          <a href="../index.html#providers">10 Providers</a>
+          <a href="../index.html#install">Install</a>
+          <a href="../guides/">Guides &amp; Fixes</a>
+          <a href="https://github.com/sarang-cmd/perplexity-autorename" target="_blank" rel="noopener">GitHub</a>
+        </nav>
+
+        <div class="nav-actions">
+          <span class="badge ok">MV3 · V0.1.0</span>
+          <a
+            href="../index.html#install"
+            data-download-release
+            download="auto-rename-for-perplexity-v0.1.0.zip"
+            class="btn primary sm"
+          >
+            ⬇ DOWNLOAD .ZIP
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="guide-hero">
+        <div class="container">
+          <nav class="breadcrumbs" aria-label="Breadcrumb">
+            <a href="../index.html">HOME</a>
+            <span class="sep">/</span>
+            <a href="../guides/">GUIDES &amp; FIXES</a>
+            <span class="sep">/</span>
+            <span>Organize Perplexity Library &amp; History</span>
+          </nav>
+
+          <div class="guide-meta-row" style="margin-bottom: 14px">
+            <span class="badge cyan">WORKFLOW GUIDE</span>
+            <span class="badge">UPDATED OCT 2026</span>
+            <span class="badge">CHROME · BRAVE · ARC · EDGE</span>
+          </div>
+
+          <h1 class="guide-h1">HOW TO ORGANIZE YOUR <span class="accent">PERPLEXITY LIBRARY</span> &amp; SEARCH HISTORY</h1>
+          <p class="guide-lead">Once you pass a few hundred Perplexity searches, finding an answer from two weeks ago becomes frustrating when every thread starts with 'Can you explain...' or 'What is the best...'. Here is a repeatable system for keeping your Perplexity Library clean.</p>
+
+          <div style="display: flex; flex-wrap: wrap; gap: 12px">
+            <a
+              href="../index.html#install"
+              data-download-release
+              download="auto-rename-for-perplexity-v0.1.0.zip"
+              class="btn primary"
+            >
+              ⬇ DOWNLOAD EXTENSION .ZIP (FREE)
+            </a>
+            <a href="../index.html#top" class="btn">TRY LIVE SIMULATOR →</a>
+            <a href="https://github.com/sarang-cmd/perplexity-autorename" target="_blank" rel="noopener" class="btn">VIEW ON GITHUB ↗</a>
+          </div>
+
+          <div class="ai-answer-box" role="region" aria-label="Quick Summary">
+            <div class="ai-answer-kicker">
+              <span>■ QUICK ANSWER · TL;DR</span>
+              <span class="badge ok">OPEN SOURCE MV3</span>
+            </div>
+            <p>You can organize your Perplexity.ai Library automatically with <a href="../index.html"><strong>Auto-Rename for Perplexity</strong></a> by combining three built-in features: <strong>3–7 word semantic auto-titling</strong> after the first answer streams, <strong>custom title prefixes</strong> (such as <code>[Research]</code> or <code>[Client]</code>) for instant visual grouping, and <strong>regex exclude rules</strong> (like <code>^define\b</code>) so quick dictionary or translation lookups are never renamed.</p>
+          </div>
+        </div>
+      </section>
+
+      <div class="guide-body-wrap">
+        <div class="container guide-layout">
+          <div class="guide-article">
+
+      <section class="guide-section">
+        <h2>3 Layers of a Clean Perplexity.ai Library</h2>
+        <p>
+          Perplexity Spaces are great for grouping curated collections, but 90% of daily searches happen directly from the home bar or omnibox and land straight in your chronological <strong>Library</strong>. Combining Perplexity’s built-in Spaces with automatic thread naming solves daily clutter without manual upkeep:
+        </p>
+        <ul>
+          <li><strong>Layer 1 — Noun-phrase 3–7 word titles:</strong> Strip conversational filler (<em>"Hey please help me understand..."</em>) and preserve technical identifiers, acronyms, error codes, and proper nouns (e.g., <code>PostgreSQL MVCC Autovacuum Tuning</code>).</li>
+          <li><strong>Layer 2 — Optional Title Prefixes:</strong> Prepend a tag such as <code>[Thesis]</code>, <code>[Backend]</code>, or <code>[Tax]</code> from the toolbar popup during focused research sprints so related threads cluster visually in your sidebar.</li>
+          <li><strong>Layer 3 — Regex Exclude Rules:</strong> Keep one-off throwaway queries (definitions, translations, quick sanity checks) from burning LLM tokens or cluttering your rename history.</li>
+        </ul>
+      </section>
+
+      <section class="guide-section">
+        <h2>Recommended Regex Exclude Patterns for Daily Use</h2>
+        <p>
+          In Auto-Rename’s Settings page (<code>options.html</code>), each line in <strong>Exclude Patterns</strong> is compiled as a case-insensitive regular expression tested against your opening question before any LLM request is made:
+        </p>
+        <div class="seo-table-wrap">
+          <table class="seo-table">
+            <thead>
+              <tr>
+                <th>Regex Pattern</th>
+                <th>What It Skips</th>
+                <th>Why It Helps</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>^define\b</code></td>
+                <td><em>"define epistemological"</em></td>
+                <td>Short two-word definitions are already self-descriptive.</td>
+              </tr>
+              <tr>
+                <td><code>^translate\b</code></td>
+                <td><em>"translate guten abend to english"</em></td>
+                <td>Avoids renaming disposable translation checks.</td>
+              </tr>
+              <tr>
+                <td><code>^(hi|hello|test)\b</code></td>
+                <td><em>"test"</em>, <em>"hello"</em></td>
+                <td>Skips connectivity or prompt warm-up messages.</td>
+              </tr>
+              <tr>
+                <td><code>^weather\b</code></td>
+                <td><em>"weather in Dresden tomorrow"</em></td>
+                <td>Leaves ephemeral local lookups untouched.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <figure class="guide-shot">
+          <img
+            src="../assets/screenshots/04-settings-full.png"
+            width="1280"
+            height="1570"
+            loading="lazy"
+            alt="Auto-Rename for Perplexity full settings page showing prefix input, regex exclude patterns, and recent rename history"
+          />
+          <figcaption>Full Settings view: configure prefixes, per-line regex exclusions, and inspect your local rename log.</figcaption>
+        </figure>
+      </section>
+
+      <section class="guide-section">
+        <h2>Switching Prefixes Fast from the Toolbar Popup</h2>
+        <p>
+          You don’t need to open the full Options page when switching tasks. Click the extension’s pixel <code>P_</code> toolbar icon to toggle auto-renaming on/off, toggle the bottom-right HUD toaster, or set a temporary <strong>Title Prefix</strong> (for example <code>[Paper Review]</code>) in two seconds. Auto-Rename automatically prevents double-prefixing if the model already includes your tag.
+        </p>
+      </section>
+    
+
+            <section class="guide-section" id="faq">
+              <h2>Frequently Asked Questions</h2>
+              <div class="faq-list">
+              <details class="faq-item" open>
+                <summary>DO RENAMED TITLES SYNC TO THE PERPLEXITY MOBILE APP AND LIBRARY SEARCH?</summary>
+                <div class="faq-body">Yes. Because Auto-Rename updates the thread via Perplexity's own server-side title endpoint (HTTP 204), the clean 3–7 word title persists across web reloads, Library search, and mobile devices signed into your Perplexity account.</div>
+              </details>
+              <details class="faq-item">
+                <summary>WHAT HAPPENS IF I TYPE AN INVALID REGULAR EXPRESSION IN EXCLUDE PATTERNS?</summary>
+                <div class="faq-body">Auto-Rename compiles each regex safely inside a guard and ignores malformed expressions without crashing or blocking valid patterns.</div>
+              </details>
+              <details class="faq-item">
+                <summary>DOES AUTO-RENAME TOUCH OLD THREADS IN MY PERPLEXITY LIBRARY?</summary>
+                <div class="faq-body">No. It only names new threads at the moment their first answer finishes streaming, so your existing archived threads and manually curated titles are never modified.</div>
+              </details>
+              </div>
+            </section>
+          </div>
+
+          <aside class="guide-aside" aria-label="Install and Guide Navigation">
+            <div class="aside-card">
+              <h3>INSTALL IN 60 SECONDS</h3>
+              <p>
+                Free, MIT-licensed Chrome Manifest V3 extension. Works immediately with zero API key or 10 LLM providers.
+              </p>
+              <a
+                href="../index.html#install"
+                data-download-release
+                download="auto-rename-for-perplexity-v0.1.0.zip"
+                class="btn primary"
+                style="width: 100%; justify-content: center; margin-bottom: 10px"
+              >
+                ⬇ DOWNLOAD V0.1.0 .ZIP
+              </a>
+              <a
+                href="../install-chrome-brave-arc-edge/"
+                class="btn sm"
+                style="width: 100%; justify-content: center"
+              >
+                UNPACKED INSTALL STEPS
+              </a>
+            </div>
+
+            <div class="aside-card">
+              <h3>ALL PERPLEXITY GUIDES</h3>
+              <ul class="aside-links">
+                <li><a href="../fix-perplexity-thread-titles/" class="">Fix Messy Perplexity Thread Titles</a></li>
+                <li><a href="../organize-perplexity-library/" class="current">Organize Perplexity Library &amp; History</a></li>
+                <li><a href="../install-chrome-brave-arc-edge/" class="">Install on Chrome, Brave, Arc &amp; Edge</a></li>
+                <li><a href="../free-groq-ollama-setup/" class="">Free Groq, Gemini &amp; Local Ollama Setup</a></li>
+                <li><a href="../perplexity-vs-chatgpt-claude-thread-titles/" class="">Perplexity vs ChatGPT &amp; Claude Titles</a></li>
+                <li><a href="../troubleshooting/" class="">Troubleshooting &amp; Error Fixes</a></li>
+                <li><a href="../perplexity-chrome-extensions/" class="">Perplexity Browser Workflow &amp; Privacy</a></li>
+              </ul>
+            </div>
+          </aside>
+        </div>
+
+        <div class="container" style="margin-top: 52px">
+          <div class="section-head">
+            <div class="section-kicker">More Guides &amp; Fixes</div>
+            <h2 class="section-title">RELATED PERPLEXITY WORKFLOW GUIDES</h2>
+          </div>
+          <div class="guide-cards-grid">
+          <article class="guide-card">
+            <div>
+              <span class="badge ok">POPULAR FIX</span>
+              <h3><a href="../fix-perplexity-thread-titles/">Fix Messy Perplexity Thread Titles</a></h3>
+              <p>Tired of Perplexity.ai using your raw prompt, stack trace, or truncated paragraph as the thread title? Fix Perplexity Library titles automatically in 60 seconds with Auto-Rename for Perplexity.</p>
+            </div>
+            <a href="../fix-perplexity-thread-titles/" class="guide-card-link">READ GUIDE →</a>
+          </article>
+          <article class="guide-card">
+            <div>
+              <span class="badge ok">INSTALL GUIDE</span>
+              <h3><a href="../install-chrome-brave-arc-edge/">Install on Chrome, Brave, Arc &amp; Edge</a></h3>
+              <p>Step-by-step unpacked installation guide for Auto-Rename for Perplexity across Google Chrome, Brave, Arc, Microsoft Edge, and Vivaldi—no Chrome Web Store account or Node.js required.</p>
+            </div>
+            <a href="../install-chrome-brave-arc-edge/" class="guide-card-link">READ GUIDE →</a>
+          </article>
+          <article class="guide-card">
+            <div>
+              <span class="badge ok">10 PROVIDERS + OFFLINE</span>
+              <h3><a href="../free-groq-ollama-setup/">Free Groq, Gemini &amp; Local Ollama Setup</a></h3>
+              <p>Compare all 10 supported LLM providers plus zero-key offline mode in Auto-Rename for Perplexity—including free Groq (gpt-oss-20b), Gemini 2.5 Flash, OpenRouter :free, and 100% local Ollama.</p>
+            </div>
+            <a href="../free-groq-ollama-setup/" class="guide-card-link">READ GUIDE →</a>
+          </article>
+          <article class="guide-card">
+            <div>
+              <span class="badge cyan">COMPARISON</span>
+              <h3><a href="../perplexity-vs-chatgpt-claude-thread-titles/">Perplexity vs ChatGPT &amp; Claude Titles</a></h3>
+              <p>ChatGPT and Claude automatically summarize new chats into short 3–6 word titles, while Perplexity.ai keeps your raw prompt. Learn why—and how to add automatic AI thread titles to Perplexity.</p>
+            </div>
+            <a href="../perplexity-vs-chatgpt-claude-thread-titles/" class="guide-card-link">READ GUIDE →</a>
+          </article>
+          <article class="guide-card">
+            <div>
+              <span class="badge warn">DIAGNOSTICS &amp; FIXES</span>
+              <h3><a href="../troubleshooting/">Troubleshooting &amp; Error Fixes</a></h3>
+              <p>Quick fixes if Perplexity threads aren't auto-renaming: grant optional host permissions, fix Ollama HTTP 403 CORS origins, understand reasoning-model token budgets, and check HTTP 204 status.</p>
+            </div>
+            <a href="../troubleshooting/" class="guide-card-link">READ GUIDE →</a>
+          </article>
+          <article class="guide-card">
+            <div>
+              <span class="badge ok">POWER-USER GUIDE</span>
+              <h3><a href="../perplexity-chrome-extensions/">Perplexity Browser Workflow &amp; Privacy</a></h3>
+              <p>How to upgrade your daily Perplexity.ai research workflow in Chrome, Brave, Arc, and Edge with open-source Manifest V3 tooling, clean 3–7 word Library titles, and strict API key privacy.</p>
+            </div>
+            <a href="../perplexity-chrome-extensions/" class="guide-card-link">READ GUIDE →</a>
+          </article>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <div class="footer-row">
+          <div style="display: flex; align-items: center; gap: 12px">
+            <img
+              src="../assets/logo.svg"
+              width="36"
+              height="36"
+              alt="Auto-Rename for Perplexity pixel logo"
+              class="pixel-crisp"
+            />
+            <div>
+              <div class="nav-brand-title">AUTO-RENAME FOR PERPLEXITY</div>
+              <div style="font-size: 13.5px; color: var(--muted)">
+                Crisp 3–7 word thread titles · Chrome Manifest V3 · MIT License
+              </div>
+            </div>
+          </div>
+
+          <div class="footer-links">
+            <a
+              href="../index.html#install"
+              data-download-release
+              download="auto-rename-for-perplexity-v0.1.0.zip"
+              >DOWNLOAD V0.1.0</a
+            >
+            <a href="../guides/">ALL GUIDES</a>
+            <a href="../fix-perplexity-thread-titles/">FIX TITLES</a>
+            <a href="../troubleshooting/">TROUBLESHOOTING</a>
+            <a href="https://github.com/sarang-cmd/perplexity-autorename" target="_blank" rel="noopener">GITHUB</a>
+            <a href="../privacy-policy.html">PRIVACY POLICY</a>
+          </div>
+        </div>
+
+        <div class="footer-disclaimer">
+          <span>
+            Independent open-source project. Not affiliated with, endorsed by, or sponsored by
+            Perplexity AI, Inc.
+          </span>
+          <span>
+            Bundled fonts: Silkscreen, Inter &amp; JetBrains Mono (SIL Open Font License 1.1).
+          </span>
+        </div>
+      </div>
+    </footer>
+
+    <script src="../release-bundle.js"></script>
+    <script src="../site.js"></script>
+    <script>
+      window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/speed-insights/script.js"></script>
+  </body>
+</html>

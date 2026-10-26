@@ -1,0 +1,140 @@
+# Auto-Rename for Perplexity
+
+> Free, MIT-licensed Chrome/Chromium Manifest V3 extension that fixes messy or cut-off Perplexity.ai thread titles by automatically renaming every new thread to a crisp 3–7 word topic summary once the first answer finishes streaming. Works immediately via 60-second unpacked install on Chrome, Brave, Arc, Edge, and Vivaldi (no Chrome Web Store listing required), with 10 LLM providers plus a 100% offline zero-key fallback.
+
+- Website & Live Simulator: https://perplexity-autorename.vercel.app/
+- Direct Extension ZIP Download (v0.1.0): https://perplexity-autorename.vercel.app/?download=1#install
+- GitHub Repository (MIT Open Source): https://github.com/sarang-cmd/perplexity-autorename
+- Complete LLM Technical Reference: https://perplexity-autorename.vercel.app/llms-full.txt
+- Privacy Policy: https://perplexity-autorename.vercel.app/privacy-policy.html
+
+## Core Problems Solved
+- Fixes Perplexity.ai saving raw prompts, pasted stack traces, SQL queries, or cut-off sentences as Library sidebar thread titles.
+- Brings ChatGPT / Claude-style automatic 3–7 word conversation naming to Perplexity.ai.
+- Never overwrites manual thread renames or follow-up turns (`last_backend_uuid` / `is_related_query` detection).
+- Supports custom prefixes (e.g. `[Research]`, `[Bug]`) and per-line regex exclude patterns (e.g. `^define\\b`, `^translate\\b`).
+- Zero telemetry, zero developer servers, and strict MV3 Service-Worker API key isolation (`chrome.storage.local`).
+
+## Guides & Documentation
+- [Guides & Fixes Hub](https://perplexity-autorename.vercel.app/guides/)
+- [How to Fix Messy or Cut-Off Perplexity Thread Titles Automatically (2026)](https://perplexity-autorename.vercel.app/fix-perplexity-thread-titles/): Tired of Perplexity.ai using your raw prompt, stack trace, or truncated paragraph as the thread title? Fix Perplexity Library titles automatically in 60 seconds with Auto-Rename for Perplexity.
+- [How to Organize Perplexity Library & Search History (Prefixes, Regex & Auto-Titles)](https://perplexity-autorename.vercel.app/organize-perplexity-library/): Turn a cluttered Perplexity.ai Library into a searchable knowledge base using automatic 3–7 word titles, custom project prefixes like [Research] or [Bug], and regex exclude rules.
+- [Install Auto-Rename for Perplexity on Chrome, Brave, Arc & Edge (No Web Store Needed)](https://perplexity-autorename.vercel.app/install-chrome-brave-arc-edge/): Step-by-step unpacked installation guide for Auto-Rename for Perplexity across Google Chrome, Brave, Arc, Microsoft Edge, and Vivaldi—no Chrome Web Store account or Node.js required.
+- [Free & Local AI Setup for Perplexity Auto-Rename: Groq, Gemini, Ollama & Offline Mode](https://perplexity-autorename.vercel.app/free-groq-ollama-setup/): Compare all 10 supported LLM providers plus zero-key offline mode in Auto-Rename for Perplexity—including free Groq (gpt-oss-20b), Gemini 2.5 Flash, OpenRouter :free, and 100% local Ollama.
+- [Why Perplexity Doesn't Auto-Name Threads Like ChatGPT or Claude (And How to Add It)](https://perplexity-autorename.vercel.app/perplexity-vs-chatgpt-claude-thread-titles/): ChatGPT and Claude automatically summarize new chats into short 3–6 word titles, while Perplexity.ai keeps your raw prompt. Learn why—and how to add automatic AI thread titles to Perplexity.
+- [Troubleshooting Perplexity Auto-Rename: Fix Empty Titles, 403 Ollama CORS & Permissions](https://perplexity-autorename.vercel.app/troubleshooting/): Quick fixes if Perplexity threads aren't auto-renaming: grant optional host permissions, fix Ollama HTTP 403 CORS origins, understand reasoning-model token budgets, and check HTTP 204 status.
+- [Open-Source Perplexity.ai Chrome Extension Setup: Clean Library, Privacy & MV3 Guide (2026)](https://perplexity-autorename.vercel.app/perplexity-chrome-extensions/): How to upgrade your daily Perplexity.ai research workflow in Chrome, Brave, Arc, and Edge with open-source Manifest V3 tooling, clean 3–7 word Library titles, and strict API key privacy.
+
+
+---
+
+## Quick Unpacked Installation (No Chrome Web Store Needed)
+1. Download `auto-rename-for-perplexity-v0.1.0.zip` from https://perplexity-autorename.vercel.app/?download=1#install and extract it to a permanent folder.
+2. Open `chrome://extensions` (or `brave://extensions`, `arc://extensions`, `edge://extensions`) and enable **Developer mode**.
+3. Click **Load unpacked** and select the extracted directory containing `manifest.json`.
+4. Refresh any open `perplexity.ai` tab and ask a new question. Works out of the box with zero API key (offline heuristic) or with Groq, Gemini, OpenRouter, OpenAI, Anthropic, Mistral, DeepSeek, Sarvam, OpenCode Zen, or local Ollama (`http://127.0.0.1:11434`).
+
+---
+
+## How to Fix Messy or Cut-Off Perplexity Thread Titles Automatically (2026)
+URL: https://perplexity-autorename.vercel.app/fix-perplexity-thread-titles/
+Summary: Tired of Perplexity.ai using your raw prompt, stack trace, or truncated paragraph as the thread title? Fix Perplexity Library titles automatically in 60 seconds with Auto-Rename for Perplexity.
+
+Q: Why does Perplexity cut off my thread titles instead of summarizing them?
+A: Perplexity defaults to naming each thread after the raw text of your first query. Long questions, pasted error logs, or conversational intros get truncated in the Library sidebar unless you manually click Rename or run Auto-Rename for Perplexity.
+
+Q: Does Auto-Rename for Perplexity work even though it is not on the Chrome Web Store yet?
+A: Yes. Every Chromium browser (Chrome, Brave, Arc, Edge, Vivaldi) natively supports loading unpacked Manifest V3 extensions in Developer Mode. Download the prebuilt ZIP from perplexity-autorename.vercel.app, unzip it, and click Load unpacked on chrome://extensions.
+
+Q: Will this overwrite threads I already renamed by hand?
+A: Never. Auto-Rename only runs on the first answer of a brand-new thread, skips all follow-up turns, and permanently locks out auto-renaming on any thread you edit manually.
+
+---
+
+## How to Organize Perplexity Library & Search History (Prefixes, Regex & Auto-Titles)
+URL: https://perplexity-autorename.vercel.app/organize-perplexity-library/
+Summary: Turn a cluttered Perplexity.ai Library into a searchable knowledge base using automatic 3–7 word titles, custom project prefixes like [Research] or [Bug], and regex exclude rules.
+
+Q: Do renamed titles sync to the Perplexity mobile app and Library search?
+A: Yes. Because Auto-Rename updates the thread via Perplexity's own server-side title endpoint (HTTP 204), the clean 3–7 word title persists across web reloads, Library search, and mobile devices signed into your Perplexity account.
+
+Q: What happens if I type an invalid regular expression in Exclude Patterns?
+A: Auto-Rename compiles each regex safely inside a guard and ignores malformed expressions without crashing or blocking valid patterns.
+
+Q: Does Auto-Rename touch old threads in my Perplexity Library?
+A: No. It only names new threads at the moment their first answer finishes streaming, so your existing archived threads and manually curated titles are never modified.
+
+---
+
+## Install Auto-Rename for Perplexity on Chrome, Brave, Arc & Edge (No Web Store Needed)
+URL: https://perplexity-autorename.vercel.app/install-chrome-brave-arc-edge/
+Summary: Step-by-step unpacked installation guide for Auto-Rename for Perplexity across Google Chrome, Brave, Arc, Microsoft Edge, and Vivaldi—no Chrome Web Store account or Node.js required.
+
+Q: Is it safe to install an unpacked Chrome extension from GitHub?
+A: Unpacked extensions let you read every file directly before loading. Auto-Rename for Perplexity has zero external runtime scripts, zero analytics/telemetry servers, runs 53 automated tests, and isolates API keys strictly inside the MV3 Service Worker.
+
+Q: How do I update the unpacked extension when a new version comes out?
+A: Extract the new release files over your existing folder (or git pull && npm run build if cloned from GitHub) and click the Reload icon on chrome://extensions. Your saved settings, API keys, and rename history in chrome.storage.local are preserved.
+
+Q: Do I need to reload open perplexity.ai tabs right after installing?
+A: Yes—refresh any already-open perplexity.ai tab once after clicking Load unpacked so Chrome attaches the MV3 content and page scripts to that tab.
+
+---
+
+## Free & Local AI Setup for Perplexity Auto-Rename: Groq, Gemini, Ollama & Offline Mode
+URL: https://perplexity-autorename.vercel.app/free-groq-ollama-setup/
+Summary: Compare all 10 supported LLM providers plus zero-key offline mode in Auto-Rename for Perplexity—including free Groq (gpt-oss-20b), Gemini 2.5 Flash, OpenRouter :free, and 100% local Ollama.
+
+Q: Do I have to enter an API key to use Auto-Rename for Perplexity?
+A: No. If you leave the API key blank (or if a provider is temporarily unreachable), Auto-Rename automatically uses its built-in offline heuristic to create a clean 3–7 word title locally.
+
+Q: How much data is sent to my configured LLM provider?
+A: Only the first question (capped at 600 characters) and an excerpt of the first answer (capped at 1,200 characters) on brand-new threads—sent directly from your browser's Service Worker to your chosen endpoint. Follow-up messages, cookies, and account IDs are never sent.
+
+Q: Why does TEST LLM verify my setup before I run a search?
+A: Clicking TEST LLM or TEST PROVIDER sends a tiny sample prompt through the exact background Service Worker adapter and confirms both host permission access and valid model output immediately.
+
+---
+
+## Why Perplexity Doesn't Auto-Name Threads Like ChatGPT or Claude (And How to Add It)
+URL: https://perplexity-autorename.vercel.app/perplexity-vs-chatgpt-claude-thread-titles/
+Summary: ChatGPT and Claude automatically summarize new chats into short 3–6 word titles, while Perplexity.ai keeps your raw prompt. Learn why—and how to add automatic AI thread titles to Perplexity.
+
+Q: Can I make Perplexity name my chats automatically like ChatGPT?
+A: Yes. Install Auto-Rename for Perplexity in Chrome, Brave, Arc, or Edge. Every new Perplexity search will automatically receive a concise 3–7 word topic title right after the first answer finishes streaming.
+
+Q: Does renaming a thread break Perplexity share links or bookmarks?
+A: No. Updating a thread's display title via Perplexity's title API updates the human-readable title in your Library while keeping existing thread UUIDs and links working.
+
+Q: Does it slow down Perplexity's streaming answer speed?
+A: Zero milliseconds of delay. Stream observation uses the standard browser Response.body.tee() API, and renaming happens asynchronously only after the first answer has already finished rendering.
+
+---
+
+## Troubleshooting Perplexity Auto-Rename: Fix Empty Titles, 403 Ollama CORS & Permissions
+URL: https://perplexity-autorename.vercel.app/troubleshooting/
+Summary: Quick fixes if Perplexity threads aren't auto-renaming: grant optional host permissions, fix Ollama HTTP 403 CORS origins, understand reasoning-model token budgets, and check HTTP 204 status.
+
+Q: Why didn't Auto-Rename run when I asked a second question in the same thread?
+A: By design! Renaming on follow-ups would constantly shift your thread's title while you research. Auto-Rename checks last_backend_uuid and is_related_query so only the first answer of a brand-new thread triggers a title.
+
+Q: What does 'HTTP 204 via groq' mean in the popup?
+A: HTTP 204 (No Content) is Perplexity's success status code confirming that set_thread_title saved your new title on Perplexity's backend. If a transient network hiccup occurs, Auto-Rename automatically retries up to two times.
+
+Q: How do I fix Ollama 403 errors with Chrome extensions on Windows or macOS?
+A: Set the environment variable OLLAMA_ORIGINS to chrome-extension://* before launching Ollama (on macOS: launchctl setenv OLLAMA_ORIGINS "chrome-extension://*", then restart the Ollama app).
+
+---
+
+## Open-Source Perplexity.ai Chrome Extension Setup: Clean Library, Privacy & MV3 Guide (2026)
+URL: https://perplexity-autorename.vercel.app/perplexity-chrome-extensions/
+Summary: How to upgrade your daily Perplexity.ai research workflow in Chrome, Brave, Arc, and Edge with open-source Manifest V3 tooling, clean 3–7 word Library titles, and strict API key privacy.
+
+Q: Does Auto-Rename for Perplexity inject ads, analytics, or tracking scripts into Perplexity?
+A: Zero. The extension contains no analytics SDKs, no remote code, and no developer servers. All bundled fonts (Silkscreen, Inter, JetBrains Mono) and icons are packaged locally inside the extension.
+
+Q: Can I contribute new providers or features to Auto-Rename for Perplexity?
+A: Yes—the entire codebase is MIT-licensed on GitHub at github.com/sarang-cmd/perplexity-autorename with zero runtime npm dependencies and fast Node test runner coverage.
+
+Q: Does it change Perplexity's dark/light theme or fonts?
+A: Never. Perplexity.ai's own page styling is 100% untouched; the Hybrid Pixel HUD styling applies only to the extension's popup, options page, and optional Shadow-DOM bottom-right toast.

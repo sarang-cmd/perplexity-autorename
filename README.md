@@ -286,6 +286,19 @@ npm run zip
 
 ---
 
+## Guides, Troubleshooting & Browser Tutorials
+
+- [**All Guides & Fixes Hub**](https://perplexity-autorename.vercel.app/guides/)
+- [**How to Fix Messy or Cut-Off Perplexity Thread Titles Automatically**](https://perplexity-autorename.vercel.app/fix-perplexity-thread-titles/)
+- [**How to Organize Your Perplexity Library & Search History (Prefixes & Regex)**](https://perplexity-autorename.vercel.app/organize-perplexity-library/)
+- [**60-Second Unpacked Install Guide for Chrome, Brave, Arc & Edge**](https://perplexity-autorename.vercel.app/install-chrome-brave-arc-edge/)
+- [**Free & Local AI Setup: Groq, Gemini, OpenRouter, Ollama & Offline Mode**](https://perplexity-autorename.vercel.app/free-groq-ollama-setup/)
+- [**Why Perplexity Doesn't Auto-Name Threads Like ChatGPT or Claude**](https://perplexity-autorename.vercel.app/perplexity-vs-chatgpt-claude-thread-titles/)
+- [**Troubleshooting Guide: Host Access, Ollama 403 CORS & Reasoning Models**](https://perplexity-autorename.vercel.app/troubleshooting/)
+- [**Open-Source Perplexity.ai Browser Setup & MV3 Privacy Guide**](https://perplexity-autorename.vercel.app/perplexity-chrome-extensions/)
+
+---
+
 ## Links, Privacy, Font Licenses & Disclaimer
 
 - **Website & Interactive Demo:** [https://perplexity-autorename.vercel.app](https://perplexity-autorename.vercel.app)

@@ -5,9 +5,63 @@
   "outputDirectory": ".",
   "headers": [
     {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "header",
+          "key": "host",
+          "value": "perplexity-autorename.vercel.app"
+        }
+      ],
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+        }
+      ]
+    },
+    {
       "source": "/assets/fonts/(.*\\.woff2)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/sitemap.xml",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/xml; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/(robots\\.txt|llms\\.txt|llms-full\\.txt)",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/plain; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/site.webmanifest",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/manifest+json; charset=utf-8"
+        }
       ]
     }
   ]

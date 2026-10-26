@@ -1,0 +1,63 @@
+# robots.txt for Auto-Rename for Perplexity (https://perplexity-autorename.vercel.app)
+# Open-source Chrome/Chromium MV3 extension: https://github.com/sarang-cmd/perplexity-autorename
+# All search engines, AI Overviews, Gemini Grounding, Perplexity, and LLM search crawlers are explicitly allowed.
+
+User-agent: *
+Allow: /
+
+# Google Search, AI Overviews & AI Mode
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: GoogleOther
+Allow: /
+
+# Google Gemini Apps & Vertex AI Grounding
+User-agent: Google-Extended
+Allow: /
+
+# Bing, Microsoft Copilot, DuckDuckGo & Yahoo
+User-agent: Bingbot
+Allow: /
+
+User-agent: DuckAssistBot
+Allow: /
+
+# Perplexity Search & Citations
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+# OpenAI ChatGPT Search & Citations
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+# Anthropic Claude Search & Citations
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+# Apple Spotlight, Safari & Siri
+User-agent: Applebot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+Sitemap: https://perplexity-autorename.vercel.app/sitemap.xml

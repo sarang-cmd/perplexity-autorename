@@ -29,6 +29,18 @@
       name="twitter:image"
       content="https://perplexity-autorename.vercel.app/assets/banner-social-1280x640.png"
     />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="google-site-verification" content="7qXtBUikHAi5IxiEi94jbzxAAUfIvy1K3-osMQS-E_M" />
+    <link rel="canonical" href="https://perplexity-autorename.vercel.app/" />
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="https://perplexity-autorename.vercel.app/sitemap.xml" />
+    <meta property="og:site_name" content="Auto-Rename for Perplexity" />
+    <link rel="icon" type="image/png" sizes="48x48" href="assets/icon-48.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png" />
+    <link rel="manifest" href="site.webmanifest" />
+    <meta name="theme-color" content="#091318" />
+    <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://perplexity-autorename.vercel.app/#website","name":"Auto-Rename for Perplexity","alternateName":["PPX Auto-Rename","Perplexity Auto-Rename Extension"],"url":"https://perplexity-autorename.vercel.app/"},{"@type":"SoftwareApplication","@id":"https://perplexity-autorename.vercel.app/#software","name":"Auto-Rename for Perplexity","alternateName":["PPX Auto-Rename","Perplexity Auto-Rename Extension","Perplexity Thread Auto-Renamer"],"applicationCategory":"BrowserApplication","applicationSubCategory":"ProductivityExtension","operatingSystem":"Chrome, Brave, Arc, Microsoft Edge, Vivaldi, Opera (Chromium Manifest V3)","softwareVersion":"0.1.0","isAccessibleForFree":true,"license":"https://opensource.org/licenses/MIT","url":"https://perplexity-autorename.vercel.app/","downloadUrl":"https://perplexity-autorename.vercel.app/releases/auto-rename-for-perplexity-v0.1.0.zip","installUrl":"https://perplexity-autorename.vercel.app/?download=1#install","codeRepository":"https://github.com/sarang-cmd/perplexity-autorename","screenshot":["https://perplexity-autorename.vercel.app/assets/screenshots/02-toast-renamed.png","https://perplexity-autorename.vercel.app/assets/screenshots/03-toolbar-popup.png","https://perplexity-autorename.vercel.app/assets/screenshots/04-settings-full.png"],"featureList":["Automatically renames new Perplexity.ai threads to crisp 3-7 word titles after the first answer streams","Supports 10 LLM providers (Groq, OpenRouter, Gemini, OpenAI, Anthropic, Mistral, DeepSeek, Sarvam, OpenCode Zen, Ollama)","100% offline zero-key heuristic fallback title generator","Optional custom title prefixes (e.g. [Research], [Bug]) and regex exclude patterns","Isolated Shadow-DOM pixel HUD toaster notification on perplexity.ai","Never overwrites manual thread edits or follow-up questions"],"offers":{"@type":"Offer","price":"0","priceCurrency":"USD","availability":"https://schema.org/InStock"},"author":{"@type":"Person","name":"sarang-cmd","url":"https://github.com/sarang-cmd"}},{"@type":"HowTo","name":"How to Install Auto-Rename for Perplexity in Chrome, Brave, Arc, or Edge","totalTime":"PT1M","step":[{"@type":"HowToStep","position":1,"name":"Download Extension ZIP","text":"Download auto-rename-for-perplexity-v0.1.0.zip from perplexity-autorename.vercel.app and unzip it."},{"@type":"HowToStep","position":2,"name":"Enable Developer Mode","text":"Open chrome://extensions (or brave://extensions, arc://extensions, edge://extensions) and enable Developer mode."},{"@type":"HowToStep","position":3,"name":"Load Unpacked","text":"Click Load unpacked and select the extracted folder containing manifest.json."}]},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does this change Perplexity.ai's fonts, theme, or page layout?","acceptedAnswer":{"@type":"Answer","text":"No. Perplexity's website layout, fonts, and CSS remain 100% untouched. Only the extension's own toolbar popup, settings page, and isolated Shadow-DOM bottom-right status toast use the retro pixel HUD theme—and the toast can be disabled anytime with one click."}},{"@type":"Question","name":"Where is my LLM API key stored, and can websites read it?","acceptedAnswer":{"@type":"Answer","text":"Your API key is stored locally on your device in chrome.storage.local and read exclusively inside the extension's background MV3 Service Worker (src/background/service-worker.js). Neither perplexity.ai nor content scripts nor even the popup DOM ever read back the raw key string. Zero developer servers or analytics exist."}},{"@type":"Question","name":"Can I use it completely free without an API key?","acceptedAnswer":{"@type":"Answer","text":"Yes! Out of the box with no API key saved, Auto-Rename uses its built-in offline keyword heuristic (heuristicTitle()) to generate clean 3–7 word titles locally with zero network requests. You can also use free-tier keys from Groq, Google AI Studio (Gemini), OpenRouter :free models, or a local Ollama server."}},{"@type":"Question","name":"Will it overwrite titles I rename manually or on follow-up questions?","acceptedAnswer":{"@type":"Answer","text":"Never. Follow-up messages and related-query clicks are skipped automatically via last_backend_uuid and is_related_query. And if you manually rename a thread in Perplexity's sidebar, the extension detects that request and locks out auto-renaming for that thread permanently."}}]}]}</script>
     <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
     <link rel="stylesheet" href="styles.css" />
   </head>
@@ -57,6 +69,7 @@
           <a href="#architecture">How It Works</a>
           <a href="#install">Install</a>
           <a href="#faq">FAQ</a>
+          <a href="guides/">Guides</a>
         </nav>
 
         <div class="nav-actions">
@@ -774,6 +787,78 @@ npm run build &amp;&amp; npm test</code></pre>
           </div>
         </div>
       </section>
+
+      <!-- Guides, Fixes & Browser Setup Hub -->
+      <section id="guides">
+        <div class="container">
+          <div class="section-head">
+            <div class="section-kicker">Guides, Fixes &amp; Tutorials</div>
+            <h2 class="section-title">PERPLEXITY THREAD NAMING &amp; SETUP GUIDES</h2>
+            <p class="section-sub">
+              Deep-dive walkthroughs on fixing truncated Perplexity sidebar titles, organizing your Library with prefixes &amp; regex rules, setting up free Groq or local Ollama, and loading unpacked in any Chromium browser.
+            </p>
+          </div>
+
+          <div class="guide-cards-grid">
+          <article class="guide-card">
+            <div>
+              <span class="badge ok">POPULAR FIX</span>
+              <h3><a href="fix-perplexity-thread-titles/">Fix Messy Perplexity Thread Titles</a></h3>
+              <p>Tired of Perplexity.ai using your raw prompt, stack trace, or truncated paragraph as the thread title? Fix Perplexity Library titles automatically in 60 seconds with Auto-Rename for Perplexity.</p>
+            </div>
+            <a href="fix-perplexity-thread-titles/" class="guide-card-link">READ GUIDE →</a>
+          </article>
+          <article class="guide-card">
+            <div>
+              <span class="badge cyan">WORKFLOW GUIDE</span>
+              <h3><a href="organize-perplexity-library/">Organize Perplexity Library &amp; History</a></h3>
+              <p>Turn a cluttered Perplexity.ai Library into a searchable knowledge base using automatic 3–7 word titles, custom project prefixes like [Research] or [Bug], and regex exclude rules.</p>
+            </div>
+            <a href="organize-perplexity-library/" class="guide-card-link">READ GUIDE →</a>
+          </article>
+          <article class="guide-card">
+            <div>
+              <span class="badge ok">INSTALL GUIDE</span>
+              <h3><a href="install-chrome-brave-arc-edge/">Install on Chrome, Brave, Arc &amp; Edge</a></h3>
+              <p>Step-by-step unpacked installation guide for Auto-Rename for Perplexity across Google Chrome, Brave, Arc, Microsoft Edge, and Vivaldi—no Chrome Web Store account or Node.js required.</p>
+            </div>
+            <a href="install-chrome-brave-arc-edge/" class="guide-card-link">READ GUIDE →</a>
+          </article>
+          <article class="guide-card">
+            <div>
+              <span class="badge ok">10 PROVIDERS + OFFLINE</span>
+              <h3><a href="free-groq-ollama-setup/">Free Groq, Gemini &amp; Local Ollama Setup</a></h3>
+              <p>Compare all 10 supported LLM providers plus zero-key offline mode in Auto-Rename for Perplexity—including free Groq (gpt-oss-20b), Gemini 2.5 Flash, OpenRouter :free, and 100% local Ollama.</p>
+            </div>
+            <a href="free-groq-ollama-setup/" class="guide-card-link">READ GUIDE →</a>
+          </article>
+          <article class="guide-card">
+            <div>
+              <span class="badge cyan">COMPARISON</span>
+              <h3><a href="perplexity-vs-chatgpt-claude-thread-titles/">Perplexity vs ChatGPT &amp; Claude Titles</a></h3>
+              <p>ChatGPT and Claude automatically summarize new chats into short 3–6 word titles, while Perplexity.ai keeps your raw prompt. Learn why—and how to add automatic AI thread titles to Perplexity.</p>
+            </div>
+            <a href="perplexity-vs-chatgpt-claude-thread-titles/" class="guide-card-link">READ GUIDE →</a>
+          </article>
+          <article class="guide-card">
+            <div>
+              <span class="badge warn">DIAGNOSTICS &amp; FIXES</span>
+              <h3><a href="troubleshooting/">Troubleshooting &amp; Error Fixes</a></h3>
+              <p>Quick fixes if Perplexity threads aren't auto-renaming: grant optional host permissions, fix Ollama HTTP 403 CORS origins, understand reasoning-model token budgets, and check HTTP 204 status.</p>
+            </div>
+            <a href="troubleshooting/" class="guide-card-link">READ GUIDE →</a>
+          </article>
+          <article class="guide-card">
+            <div>
+              <span class="badge ok">POWER-USER GUIDE</span>
+              <h3><a href="perplexity-chrome-extensions/">Perplexity Browser Workflow &amp; Privacy</a></h3>
+              <p>How to upgrade your daily Perplexity.ai research workflow in Chrome, Brave, Arc, and Edge with open-source Manifest V3 tooling, clean 3–7 word Library titles, and strict API key privacy.</p>
+            </div>
+            <a href="perplexity-chrome-extensions/" class="guide-card-link">READ GUIDE →</a>
+          </article>
+          </div>
+        </div>
+      </section>
     </main>
 
     <!-- Footer -->
@@ -804,6 +889,8 @@ npm run build &amp;&amp; npm test</code></pre>
               >DOWNLOAD V0.1.0</a
             >
             <a href="#architecture">ARCHITECTURE</a>
+            <a href="guides/">GUIDES &amp; FIXES</a>
+            <a href="https://github.com/sarang-cmd/perplexity-autorename" target="_blank" rel="noopener">GITHUB</a>
             <a href="privacy-policy.html">PRIVACY POLICY</a>
             <a href="#install">INSTALL GUIDE</a>
           </div>
