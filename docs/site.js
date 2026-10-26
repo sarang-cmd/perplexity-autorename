@@ -460,6 +460,45 @@
     selectProvider(PROVIDERS[0]);
   }
 
+  // --- Embedded Self-Contained Extension Release ZIP Download ---
+  (function initReleaseDownload() {
+    const b64 = window.PPX_RELEASE_ZIP_B64;
+    const filename = window.PPX_RELEASE_ZIP_NAME || "auto-rename-for-perplexity-v0.1.0.zip";
+    if (!b64) return;
+
+    let blobUrl = null;
+    function getZipBlobUrl() {
+      if (blobUrl) return blobUrl;
+      const bin = atob(b64);
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) {
+        bytes[i] = bin.charCodeAt(i);
+      }
+      const blob = new Blob([bytes], { type: "application/zip" });
+      blobUrl = URL.createObjectURL(blob);
+      return blobUrl;
+    }
+
+    const links = document.querySelectorAll("[data-download-release]");
+    const readyUrl = getZipBlobUrl();
+    links.forEach((a) => {
+      a.setAttribute("href", readyUrl);
+      a.setAttribute("download", filename);
+    });
+
+    // Support direct ?download=1 links (e.g. from GitHub README)
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("download") === "1" && links[0]) {
+        setTimeout(() => {
+          links[0].click();
+        }, 150);
+      }
+    } catch {
+      // ignore URLSearchParams errors on legacy environments
+    }
+  })();
+
   // --- Copy-to-Clipboard Buttons ---
   document.querySelectorAll("[data-copy]").forEach((btn) => {
     btn.addEventListener("click", async () => {

@@ -15,27 +15,51 @@
 }
 
 @font-face {
-  font-family: "PPX Pixel";
+  font-family: "PPX Inter";
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url("assets/fonts/PixelifySans-Regular.woff2") format("woff2");
+  src: url("assets/fonts/Inter-Regular.woff2") format("woff2");
 }
 
 @font-face {
-  font-family: "PPX Pixel";
+  font-family: "PPX Inter";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("assets/fonts/Inter-Medium.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "PPX Inter";
   font-style: normal;
   font-weight: 600;
   font-display: swap;
-  src: url("assets/fonts/PixelifySans-SemiBold.woff2") format("woff2");
+  src: url("assets/fonts/Inter-SemiBold.woff2") format("woff2");
 }
 
 @font-face {
-  font-family: "PPX Pixel";
+  font-family: "PPX Inter";
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url("assets/fonts/PixelifySans-Bold.woff2") format("woff2");
+  src: url("assets/fonts/Inter-Bold.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "PPX Mono";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("assets/fonts/JetBrainsMono-Medium.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "PPX Mono";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("assets/fonts/JetBrainsMono-SemiBold.woff2") format("woff2");
 }
 
 :root {
@@ -82,14 +106,14 @@ html {
 
 body {
   margin: 0;
-  font-family: "PPX Pixel", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: "PPX Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background-color: var(--bg);
   background-image: radial-gradient(var(--dot) 1px, transparent 1px);
   background-size: 10px 10px;
   color: var(--text);
-  font-size: 16px;
-  line-height: 1.55;
-  -webkit-font-smoothing: none;
+  font-size: 15.5px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
 
@@ -129,8 +153,11 @@ a:hover {
 }
 
 code,
-pre {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+pre,
+.sim-url,
+.sim-netlog,
+.provider-model {
+  font-family: "PPX Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
 code {
@@ -529,8 +556,8 @@ section {
   border: 1px solid var(--border);
   background: var(--card-subtle);
   color: var(--text);
-  font-family: "PPX Pixel", monospace;
-  font-size: 14px;
+  font-family: "PPX Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 13.5px;
   outline: none;
 }
 

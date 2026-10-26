@@ -116,7 +116,7 @@ describe("ui: Bottom-Right Pixel Rename Toaster", () => {
     const fontStyle = document.getElementById("ppx-autorename-hud-fonts");
     assert.ok(fontStyle);
     assert.ok(fontStyle.textContent.includes("PPX Silkscreen"));
-    assert.ok(fontStyle.textContent.includes("PPX Pixel"));
+    assert.ok(fontStyle.textContent.includes("PPX Inter"));
 
     toaster.showRenaming({ step: "Saving title to Perplexity..." });
     assert.equal(toaster.getState(), "renaming");

@@ -15,27 +15,51 @@
 }
 
 @font-face {
-  font-family: "PPX Pixel";
+  font-family: "PPX Inter";
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url("fonts/PixelifySans-Regular.woff2") format("woff2");
+  src: url("fonts/Inter-Regular.woff2") format("woff2");
 }
 
 @font-face {
-  font-family: "PPX Pixel";
+  font-family: "PPX Inter";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("fonts/Inter-Medium.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "PPX Inter";
   font-style: normal;
   font-weight: 600;
   font-display: swap;
-  src: url("fonts/PixelifySans-SemiBold.woff2") format("woff2");
+  src: url("fonts/Inter-SemiBold.woff2") format("woff2");
 }
 
 @font-face {
-  font-family: "PPX Pixel";
+  font-family: "PPX Inter";
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url("fonts/PixelifySans-Bold.woff2") format("woff2");
+  src: url("fonts/Inter-Bold.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "PPX Mono";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("fonts/JetBrainsMono-Medium.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "PPX Mono";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("fonts/JetBrainsMono-SemiBold.woff2") format("woff2");
 }
 
 :root {
@@ -68,14 +92,14 @@
 
 body {
   margin: 0;
-  font-family: "PPX Pixel", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: "PPX Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background-color: var(--bg);
   background-image: radial-gradient(var(--dot) 1px, transparent 1px);
   background-size: 10px 10px;
   color: var(--text);
-  font-size: 14px;
-  line-height: 1.45;
-  -webkit-font-smoothing: none;
+  font-size: 13.5px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
 h1,
@@ -88,8 +112,8 @@ h3 {
 }
 
 code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 0.84em;
+  font-family: "PPX Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.88em;
   background: var(--card-subtle);
   border: 1px solid var(--border);
   padding: 1px 5px;
@@ -128,8 +152,8 @@ code {
 }
 
 .brand-sub {
-  font-family: "PPX Pixel", monospace;
-  font-size: 13px;
+  font-family: "PPX Inter", sans-serif;
+  font-size: 12.5px;
   color: var(--muted);
   margin-top: 2px;
 }
@@ -171,7 +195,7 @@ code {
   background-color: var(--card-subtle);
   background-image: radial-gradient(rgba(45, 212, 191, 0.12) 1px, transparent 1px);
   background-size: 8px 8px;
-  font-size: 13.5px;
+  font-size: 13px;
 }
 
 .status-banner.ok {
@@ -230,13 +254,23 @@ textarea {
   border: 1px solid var(--border);
   background: var(--card-subtle);
   color: var(--text);
-  font-family: "PPX Pixel", monospace;
-  font-size: 14px;
+  font-family: "PPX Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 13.5px;
   outline: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+#popup-model,
+#model,
+#custom-base-url,
+#exclude-patterns {
+  font-family: "PPX Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px;
 }
 
 input::placeholder,
 textarea::placeholder {
+  font-family: "PPX Inter", -apple-system, BlinkMacSystemFont, sans-serif;
   color: #64748b;
 }
 
@@ -248,13 +282,13 @@ textarea:focus {
 
 textarea {
   min-height: 76px;
-  font-size: 13.5px;
+  line-height: 1.5;
   resize: vertical;
 }
 
 .hint {
   margin-top: 5px;
-  font-size: 12.5px;
+  font-size: 12px;
   color: var(--muted);
 }
 
@@ -281,8 +315,8 @@ textarea {
   background: var(--card-subtle);
   cursor: pointer;
   user-select: none;
-  font-family: "PPX Pixel", monospace;
-  font-size: 14px;
+  font-family: "PPX Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 13.5px;
   font-weight: 600;
   text-transform: none;
   letter-spacing: 0;
@@ -452,7 +486,7 @@ button:disabled {
 table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13.5px;
+  font-size: 13px;
 }
 
 th,

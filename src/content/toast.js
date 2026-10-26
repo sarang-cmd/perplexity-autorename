@@ -1,9 +1,9 @@
 /**
  * Bottom-Right Pixel Rename Toaster (`#ppx-autorename-toast`) on `perplexity.ai`.
  *
- * - Injects ONLY private `@font-face` declarations (`"PPX Silkscreen"`, `"PPX Pixel"`)
- *   into `<head>` so Shadow-DOM text renders with crisp pixel fonts while NEVER
- *   modifying any CSS or DOM element of Perplexity's website.
+ * - Injects ONLY private `@font-face` declarations (`"PPX Silkscreen"`, `"PPX Inter"`)
+ *   into `<head>` so Shadow-DOM text renders with crisp pixel HUD headers and ultra-readable
+ *   anti-aliased body text while NEVER modifying any CSS or DOM element of Perplexity's website.
  * - Stays completely hidden when idle.
  * - Matches the exact pixel HUD design:
  *   - Watching: sky-blue border (`#38bdf8`), `WATCHING STREAM_`, 2×2 pixel spinner
@@ -39,25 +39,18 @@ function ensurePixelFontFaces(doc, chromeObj) {
       src: url("${getUrl("fonts/Silkscreen-Bold.woff2")}") format("woff2");
     }
     @font-face {
-      font-family: "PPX Pixel";
+      font-family: "PPX Inter";
       font-style: normal;
       font-weight: 400;
       font-display: swap;
-      src: url("${getUrl("fonts/PixelifySans-Regular.woff2")}") format("woff2");
+      src: url("${getUrl("fonts/Inter-Regular.woff2")}") format("woff2");
     }
     @font-face {
-      font-family: "PPX Pixel";
+      font-family: "PPX Inter";
       font-style: normal;
       font-weight: 600;
       font-display: swap;
-      src: url("${getUrl("fonts/PixelifySans-SemiBold.woff2")}") format("woff2");
-    }
-    @font-face {
-      font-family: "PPX Pixel";
-      font-style: normal;
-      font-weight: 700;
-      font-display: swap;
-      src: url("${getUrl("fonts/PixelifySans-Bold.woff2")}") format("woff2");
+      src: url("${getUrl("fonts/Inter-SemiBold.woff2")}") format("woff2");
     }
   `;
   doc.head.appendChild(style);
@@ -71,8 +64,8 @@ const SHADOW_CSS = `
     bottom: 20px;
     z-index: 2147483646;
     pointer-events: none;
-    font-family: "PPX Pixel", ui-monospace, SFMono-Regular, Menlo, monospace;
-    -webkit-font-smoothing: none;
+    font-family: "PPX Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
   }
 
   .toast {
@@ -220,11 +213,12 @@ const SHADOW_CSS = `
   }
 
   .body-msg {
-    font-family: "PPX Pixel", monospace;
+    font-family: "PPX Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     font-size: 13.5px;
-    line-height: 1.4;
+    line-height: 1.45;
     color: #cbd5e1;
     word-break: break-word;
+    -webkit-font-smoothing: antialiased;
   }
 
   .body-msg.title-box {

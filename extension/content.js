@@ -369,25 +369,18 @@
       src: url("${getUrl("fonts/Silkscreen-Bold.woff2")}") format("woff2");
     }
     @font-face {
-      font-family: "PPX Pixel";
+      font-family: "PPX Inter";
       font-style: normal;
       font-weight: 400;
       font-display: swap;
-      src: url("${getUrl("fonts/PixelifySans-Regular.woff2")}") format("woff2");
+      src: url("${getUrl("fonts/Inter-Regular.woff2")}") format("woff2");
     }
     @font-face {
-      font-family: "PPX Pixel";
+      font-family: "PPX Inter";
       font-style: normal;
       font-weight: 600;
       font-display: swap;
-      src: url("${getUrl("fonts/PixelifySans-SemiBold.woff2")}") format("woff2");
-    }
-    @font-face {
-      font-family: "PPX Pixel";
-      font-style: normal;
-      font-weight: 700;
-      font-display: swap;
-      src: url("${getUrl("fonts/PixelifySans-Bold.woff2")}") format("woff2");
+      src: url("${getUrl("fonts/Inter-SemiBold.woff2")}") format("woff2");
     }
   `;
     doc.head.appendChild(style);
@@ -400,8 +393,8 @@
     bottom: 20px;
     z-index: 2147483646;
     pointer-events: none;
-    font-family: "PPX Pixel", ui-monospace, SFMono-Regular, Menlo, monospace;
-    -webkit-font-smoothing: none;
+    font-family: "PPX Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
   }
 
   .toast {
@@ -549,11 +542,12 @@
   }
 
   .body-msg {
-    font-family: "PPX Pixel", monospace;
+    font-family: "PPX Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     font-size: 13.5px;
-    line-height: 1.4;
+    line-height: 1.45;
     color: #cbd5e1;
     word-break: break-word;
+    -webkit-font-smoothing: antialiased;
   }
 
   .body-msg.title-box {

@@ -99,7 +99,7 @@ Expected files inside the ZIP:
 - `popup.html`, `popup.js`
 - `options.html`, `options.js`
 - `pixel-ui.css`
-- `fonts/Silkscreen-Regular.woff2`, `fonts/Silkscreen-Bold.woff2`, `fonts/PixelifySans-Regular.woff2`, `fonts/PixelifySans-SemiBold.woff2`, `fonts/PixelifySans-Bold.woff2`
+- `fonts/Silkscreen-*.woff2`, `fonts/Inter-*.woff2`, `fonts/JetBrainsMono-*.woff2`
 - `icons/icon16.png`, `icons/icon32.png`, `icons/icon48.png`, `icons/icon128.png`
 
 ---
