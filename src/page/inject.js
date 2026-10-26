@@ -19,7 +19,13 @@ import {
   PERPLEXITY_CONFIG,
 } from "../config/selectors.js";
 import { createStreamAssembler, parseAskRequestBody } from "../lib/sse.js";
-import { fetchAccountId, postThreadRename } from "../lib/perplexity-api.js";
+import {
+  fetchAccountId,
+  fetchLibraryThreadsPage,
+  fetchThreadDetail,
+  postThreadRename,
+} from "../lib/perplexity-api.js";
+import { parseSlugFromUrl } from "../lib/library.js";
 
 const { endpoints, renameBodyFields, domMarkers } = PERPLEXITY_CONFIG;
 
@@ -255,17 +261,20 @@ export function installPageScript(win = globalThis.window) {
 
   win.fetch = wrappedFetch;
 
-  // Same-origin rename bridge for the content script (uses `originalFetch` so it
+  // Same-origin bridge for the content script (uses `originalFetch` so it
   // bypasses `wrappedFetch` and preserves true page Origin & cookies).
   const onWindowMessage = async (event) => {
     if (event.source !== win) return;
     const msg = event.data;
-    if (
-      !msg ||
-      msg.ns !== MESSAGE_NS ||
-      msg.type !== WINDOW_MESSAGES.RENAME_REQUEST ||
-      typeof msg.requestId !== "string"
-    ) {
+    if (!msg || msg.ns !== MESSAGE_NS || typeof msg.requestId !== "string") {
+      return;
+    }
+
+    const isHandled =
+      msg.type === WINDOW_MESSAGES.RENAME_REQUEST ||
+      msg.type === WINDOW_MESSAGES.THREAD_DETAIL_REQUEST ||
+      msg.type === WINDOW_MESSAGES.LIST_THREADS_REQUEST;
+    if (!isHandled) {
       return;
     }
 
@@ -279,29 +288,81 @@ export function installPageScript(win = globalThis.window) {
       cachedAccountId = await fetchAccountId(originalFetch, origin);
     }
 
-    const result = await postThreadRename({
-      contextUuid: msg.contextUuid,
-      readWriteToken: msg.readWriteToken,
-      title: msg.title,
-      accountId: cachedAccountId,
-      fetchImpl: originalFetch,
-      origin,
-    });
+    if (msg.type === WINDOW_MESSAGES.RENAME_REQUEST) {
+      const result = await postThreadRename({
+        contextUuid: msg.contextUuid,
+        readWriteToken: msg.readWriteToken,
+        title: msg.title,
+        accountId: cachedAccountId,
+        fetchImpl: originalFetch,
+        origin,
+      });
 
-    if (result.ok && win.document && typeof msg.title === "string" && msg.title) {
-      try {
-        win.document.title = msg.title;
-      } catch {
-        // Ignore document.title write errors
+      const activeSlug = parseSlugFromUrl(win.location?.pathname || "");
+      const shouldSyncDocTitle =
+        !msg.batch && (!msg.slug || !activeSlug || activeSlug === msg.slug);
+
+      if (
+        result.ok &&
+        shouldSyncDocTitle &&
+        win.document &&
+        typeof msg.title === "string" &&
+        msg.title
+      ) {
+        try {
+          win.document.title = msg.title;
+        } catch {
+          // Ignore document.title write errors
+        }
       }
+
+      postToPage({
+        ns: MESSAGE_NS,
+        type: WINDOW_MESSAGES.RENAME_RESPONSE,
+        requestId: msg.requestId,
+        result,
+      });
+      return;
     }
 
-    postToPage({
-      ns: MESSAGE_NS,
-      type: WINDOW_MESSAGES.RENAME_RESPONSE,
-      requestId: msg.requestId,
-      result,
-    });
+    if (msg.type === WINDOW_MESSAGES.THREAD_DETAIL_REQUEST) {
+      const effectiveSlug =
+        (typeof msg.slug === "string" && msg.slug.trim()) ||
+        parseSlugFromUrl(win.location?.pathname || "");
+
+      const result = await fetchThreadDetail({
+        slug: effectiveSlug,
+        accountId: cachedAccountId,
+        fetchImpl: originalFetch,
+        origin,
+      });
+
+      postToPage({
+        ns: MESSAGE_NS,
+        type: WINDOW_MESSAGES.THREAD_DETAIL_RESPONSE,
+        requestId: msg.requestId,
+        result,
+      });
+      return;
+    }
+
+    if (msg.type === WINDOW_MESSAGES.LIST_THREADS_REQUEST) {
+      const result = await fetchLibraryThreadsPage({
+        offset: Number(msg.offset) || 0,
+        limit: Number(msg.limit) || PERPLEXITY_CONFIG.defaultLibraryPageSize,
+        pinned: Boolean(msg.pinned),
+        accountId: cachedAccountId,
+        fetchImpl: originalFetch,
+        origin,
+      });
+
+      postToPage({
+        ns: MESSAGE_NS,
+        type: WINDOW_MESSAGES.LIST_THREADS_RESPONSE,
+        requestId: msg.requestId,
+        result,
+      });
+    }
   };
 
   win.addEventListener("message", onWindowMessage);

@@ -7,7 +7,13 @@
     RECORD_RENAME: "record-rename",
     RECORD_STATUS: "record-status",
     TEST_PROVIDER: "test-provider",
-    SETTINGS_UPDATED: "settings-updated"
+    SETTINGS_UPDATED: "settings-updated",
+    PING_CONTENT: "ping-content",
+    RENAME_CURRENT_CHAT: "rename-current-chat",
+    START_BATCH_RENAME: "start-batch-rename",
+    CANCEL_BATCH_RENAME: "cancel-batch-rename",
+    GET_BATCH_STATUS: "get-batch-status",
+    UPDATE_BATCH_STATUS: "update-batch-status"
   };
   var PERPLEXITY_CONFIG = {
     origin: "https://www.perplexity.ai",
@@ -17,14 +23,75 @@
     apiClient: "default",
     source: "default",
     renameRequestReason: "thread-item",
+    libraryRequestReason: "library",
+    defaultLibraryPageSize: 20,
     endpoints: {
       askStreamPath: "/rest/sse/perplexity_ask",
       renamePath: "/rest/thread/set_thread_title",
-      sessionPath: "/api/auth/session"
+      sessionPath: "/api/auth/session",
+      listThreadsPath: "/rest/thread/list_ask_threads",
+      listPinnedThreadsPath: "/rest/thread/list_pinned_ask_threads",
+      threadDetailPathPrefix: "/rest/thread/"
     },
     queryParams: {
       version: "version",
       source: "source"
+    },
+    threadDetailQueryParams: {
+      withParentInfo: "with_parent_info",
+      withSchematizedResponse: "with_schematized_response",
+      limit: "limit",
+      offset: "offset",
+      fromFirst: "from_first"
+    },
+    listRequestFields: {
+      limit: "limit",
+      offset: "offset",
+      ascending: "ascending",
+      searchTerm: "search_term"
+    },
+    listItemFields: {
+      contextUuid: "context_uuid",
+      contextUuidAlt: "contextUUID",
+      slug: "slug",
+      backendUuid: "backend_uuid",
+      uuid: "uuid",
+      title: "title",
+      name: "name",
+      queryStr: "query_str",
+      firstMessagePreview: "first_message_preview",
+      readWriteToken: "read_write_token",
+      readWriteTokenAlt: "readWriteToken",
+      lastQueryDatetime: "last_query_datetime",
+      updatedDatetime: "updated_datetime",
+      createdDatetime: "created_datetime",
+      createdAt: "created_at",
+      updatedAt: "updated_at",
+      queryCount: "query_count",
+      status: "status",
+      completedStatus: "COMPLETED",
+      hasNextPage: "has_next_page",
+      containerKeys: ["threads", "items", "data", "results"]
+    },
+    threadDetailFields: {
+      entries: "entries",
+      hasNextPage: "has_next_page",
+      contextUuid: "context_uuid",
+      contextUuidAlt: "contextUUID",
+      readWriteToken: "read_write_token",
+      readWriteTokenAlt: "readWriteToken",
+      backendUuid: "backend_uuid",
+      uuid: "uuid",
+      status: "status",
+      completedStatus: "COMPLETED",
+      queryStr: "query_str",
+      query: "query",
+      title: "title",
+      threadTitle: "thread_title",
+      thread: "thread",
+      entryCreatedDatetime: "entry_created_datetime",
+      entryUpdatedDatetime: "entry_updated_datetime",
+      blocks: "blocks"
     },
     headers: {
       contentType: "Content-Type",
@@ -79,6 +146,7 @@
       blocks: "blocks",
       intendedUsage: "intended_usage",
       askTextUsage: "ask_text",
+      askTextSectionPattern: /^ask_text_(\d+)_markdown$/,
       markdownBlock: "markdown_block",
       answer: "answer",
       stepType: "step_type",
@@ -98,7 +166,8 @@
     API_KEYS: "apiKeys",
     RENAMED_IDS: "renamedIds",
     HISTORY: "renameHistory",
-    LAST_STATUS: "lastStatus"
+    LAST_STATUS: "lastStatus",
+    BATCH_STATUS: "batchStatus"
   };
   var DEFAULT_SETTINGS = Object.freeze({
     enabled: true,
@@ -189,6 +258,11 @@
     const store = resolveStorage(storageArea);
     const raw = await store.get(STORAGE_KEYS.LAST_STATUS);
     return raw?.[STORAGE_KEYS.LAST_STATUS] || null;
+  }
+  async function getBatchStatus(storageArea) {
+    const store = resolveStorage(storageArea);
+    const raw = await store.get(STORAGE_KEYS.BATCH_STATUS);
+    return raw?.[STORAGE_KEYS.BATCH_STATUS] || null;
   }
 
   // src/lib/decide.js
@@ -462,6 +536,23 @@
     lastStatusSummary: document.getElementById("last-status-summary"),
     lastStatusTime: document.getElementById("last-status-time"),
     lastStatusDetail: document.getElementById("last-status-detail"),
+    optBatchBadge: document.getElementById("opt-batch-badge"),
+    optRenameCurrentBtn: document.getElementById("opt-rename-current-btn"),
+    optRegenCurrentBtn: document.getElementById("opt-regen-current-btn"),
+    optCurrentFeedback: document.getElementById("opt-current-feedback"),
+    optPresetChips: document.getElementById("opt-preset-chips"),
+    optBatchMode: document.getElementById("opt-batch-mode"),
+    optBatchNumberWrap: document.getElementById("opt-batch-number-wrap"),
+    optBatchNumberLabel: document.getElementById("opt-batch-number-label"),
+    optBatchNumber: document.getElementById("opt-batch-number"),
+    optSkipRenamed: document.getElementById("opt-skip-renamed"),
+    optStartBatchBtn: document.getElementById("opt-start-batch-btn"),
+    optStopBatchBtn: document.getElementById("opt-stop-batch-btn"),
+    optBatchProgress: document.getElementById("opt-batch-progress"),
+    optBatchLabel: document.getElementById("opt-batch-label"),
+    optBatchPct: document.getElementById("opt-batch-pct"),
+    optBatchFill: document.getElementById("opt-batch-fill"),
+    optBatchStats: document.getElementById("opt-batch-stats"),
     providerSelect: document.getElementById("provider-select"),
     modelInput: document.getElementById("model-input"),
     customUrlField: document.getElementById("custom-url-field"),
@@ -758,11 +849,69 @@
       );
     }
     populateProviderSelect();
-    const [settings, history, lastStatus] = await Promise.all([
+    const [settings, history, lastStatus, storedBatch, swState] = await Promise.all([
       getSettings(),
       getHistory(),
-      getLastStatus()
+      getLastStatus(),
+      getBatchStatus(),
+      chrome?.runtime?.sendMessage ? chrome.runtime.sendMessage({ ns: MESSAGE_NS, type: RUNTIME_MESSAGES.GET_STATE }).catch(() => null) : Promise.resolve(null)
     ]);
+    function syncOptBatchControls() {
+      if (!els.optBatchMode) return;
+      const mode = els.optBatchMode.value;
+      if (mode === "all") {
+        els.optBatchNumberWrap.classList.add("hidden");
+      } else {
+        els.optBatchNumberWrap.classList.remove("hidden");
+        els.optBatchNumberLabel.textContent = mode === "days" ? "Number of Days" : "Number of Chats";
+        els.optBatchNumber.max = mode === "days" ? "3650" : "5000";
+      }
+      const specKey = mode === "all" ? "all" : `${mode}:${Number(els.optBatchNumber.value) || 0}`;
+      for (const chip of els.optPresetChips?.querySelectorAll(".preset-chip") || []) {
+        chip.classList.toggle("active", chip.dataset.spec === specKey);
+      }
+    }
+    function renderOptBatchStatus(batch) {
+      if (!els.optBatchProgress) return;
+      if (!batch) {
+        els.optBatchProgress.classList.add("hidden");
+        els.optStartBatchBtn?.classList.remove("hidden");
+        els.optStopBatchBtn?.classList.add("hidden");
+        if (els.optBatchBadge) {
+          els.optBatchBadge.className = "badge ok";
+          els.optBatchBadge.textContent = "READY";
+        }
+        return;
+      }
+      const running = Boolean(batch.running);
+      els.optBatchProgress.classList.remove("hidden");
+      els.optBatchProgress.classList.toggle("running", running);
+      els.optStartBatchBtn?.classList.toggle("hidden", running);
+      els.optStopBatchBtn?.classList.toggle("hidden", !running);
+      if (running) {
+        if (els.optBatchBadge) {
+          els.optBatchBadge.className = "badge warn";
+          els.optBatchBadge.textContent = "RUNNING";
+        }
+        const isScan = batch.phase === "scanning";
+        const pct = isScan ? 12 : batch.total > 0 ? Math.round(batch.processed / batch.total * 100) : 15;
+        els.optBatchLabel.textContent = batch.message || (isScan ? "Scanning Perplexity Library…" : `Renaming ${batch.processed} of ${batch.total}…`);
+        els.optBatchPct.textContent = isScan ? "SCAN" : `${pct}%`;
+        els.optBatchFill.style.width = `${Math.max(6, Math.min(100, pct))}%`;
+        els.optBatchStats.textContent = isScan ? `${batch.scanned || 0} chats discovered in library` : `${batch.renamed || 0} renamed · ${batch.skipped || 0} skipped`;
+      } else {
+        const isErr = batch.state === "error";
+        if (els.optBatchBadge) {
+          els.optBatchBadge.className = isErr ? "badge err" : "badge ok";
+          els.optBatchBadge.textContent = isErr ? "ERROR" : batch.state === "cancelled" ? "STOPPED" : "COMPLETE";
+        }
+        const pct = batch.total > 0 ? Math.round((batch.processed || 0) / batch.total * 100) : 100;
+        els.optBatchLabel.textContent = batch.message || "Batch complete";
+        els.optBatchPct.textContent = isErr ? "ERR" : `${pct}%`;
+        els.optBatchFill.style.width = `${isErr ? 100 : Math.max(0, Math.min(100, pct))}%`;
+        els.optBatchStats.textContent = `${batch.renamed || 0} renamed · ${batch.skipped || 0} skipped${batch.failed ? ` · ${batch.failed} failed` : ""}`;
+      }
+    }
     lastKnownProvider = settings.provider;
     els.providerSelect.value = settings.provider;
     els.modelInput.value = settings.model;
@@ -773,10 +922,138 @@
     els.excludeTextarea.value = settings.excludePatterns.join("\n");
     els.debugCheckbox.checked = settings.debug;
     updateCustomUrlVisibility(settings.provider);
+    syncOptBatchControls();
     renderLastStatus(lastStatus);
     renderHistory(history);
+    renderOptBatchStatus(swState?.batchStatus || storedBatch);
     await refreshKeyBadge(settings.provider);
     await refreshHostPermissionUI();
+    async function triggerOptOpenChat(regenerate) {
+      await ensureHostPermissionFromGesture();
+      els.optRenameCurrentBtn.disabled = true;
+      els.optRegenCurrentBtn.disabled = true;
+      showFeedback(
+        els.optCurrentFeedback,
+        "warn",
+        regenerate ? "Regenerating fresh title for open Perplexity chat…" : "Renaming current open Perplexity chat…"
+      );
+      try {
+        const res = await chrome.runtime.sendMessage({
+          ns: MESSAGE_NS,
+          type: RUNTIME_MESSAGES.RENAME_CURRENT_CHAT,
+          regenerate
+        });
+        if (res?.ok && res.title) {
+          showFeedback(
+            els.optCurrentFeedback,
+            "ok",
+            `${regenerate ? "Regenerated title" : "Renamed open chat"}: "${res.title}"`
+          );
+        } else {
+          showFeedback(
+            els.optCurrentFeedback,
+            "err",
+            res?.error || "Open a Perplexity thread (/search/...) in another tab first."
+          );
+        }
+      } catch (err) {
+        showFeedback(
+          els.optCurrentFeedback,
+          "err",
+          err?.message || "Could not contact background service worker."
+        );
+      } finally {
+        els.optRenameCurrentBtn.disabled = false;
+        els.optRegenCurrentBtn.disabled = false;
+      }
+    }
+    els.optRenameCurrentBtn?.addEventListener("click", () => {
+      triggerOptOpenChat(false);
+    });
+    els.optRegenCurrentBtn?.addEventListener("click", () => {
+      triggerOptOpenChat(true);
+    });
+    els.optPresetChips?.addEventListener("click", (e) => {
+      const chip = e.target.closest(".preset-chip");
+      if (!chip) return;
+      const raw = chip.dataset.spec || "count:50";
+      if (raw === "all") {
+        els.optBatchMode.value = "all";
+      } else {
+        const [mode, val] = raw.split(":");
+        els.optBatchMode.value = mode === "days" ? "days" : "count";
+        els.optBatchNumber.value = val || "50";
+      }
+      syncOptBatchControls();
+    });
+    els.optBatchMode?.addEventListener("change", () => {
+      if (els.optBatchMode.value === "days" && Number(els.optBatchNumber.value) === 50) {
+        els.optBatchNumber.value = "30";
+      }
+      syncOptBatchControls();
+    });
+    els.optBatchNumber?.addEventListener("input", syncOptBatchControls);
+    els.optStartBatchBtn?.addEventListener("click", async () => {
+      await ensureHostPermissionFromGesture();
+      const mode = els.optBatchMode.value;
+      const num = Math.max(1, Number(els.optBatchNumber.value) || 30);
+      const skipAlreadyRenamed = Boolean(els.optSkipRenamed.checked);
+      const spec = mode === "all" ? { mode: "all", skipAlreadyRenamed } : mode === "days" ? { mode: "days", days: num, skipAlreadyRenamed } : { mode: "count", count: num, skipAlreadyRenamed };
+      els.optStartBatchBtn.disabled = true;
+      renderOptBatchStatus({
+        running: true,
+        phase: "scanning",
+        scanned: 0,
+        processed: 0,
+        total: 0,
+        renamed: 0,
+        skipped: 0,
+        message: "Starting Perplexity Library scan…"
+      });
+      try {
+        const res = await chrome.runtime.sendMessage({
+          ns: MESSAGE_NS,
+          type: RUNTIME_MESSAGES.START_BATCH_RENAME,
+          spec
+        });
+        if (!res?.ok) {
+          renderOptBatchStatus({
+            running: false,
+            state: "error",
+            processed: 0,
+            total: 0,
+            renamed: 0,
+            skipped: 0,
+            failed: 1,
+            message: res?.error || "Could not start batch library rename."
+          });
+        }
+      } catch (err) {
+        renderOptBatchStatus({
+          running: false,
+          state: "error",
+          processed: 0,
+          total: 0,
+          renamed: 0,
+          skipped: 0,
+          failed: 1,
+          message: err?.message || "Service worker error"
+        });
+      } finally {
+        els.optStartBatchBtn.disabled = false;
+      }
+    });
+    els.optStopBatchBtn?.addEventListener("click", async () => {
+      els.optStopBatchBtn.disabled = true;
+      try {
+        await chrome.runtime.sendMessage({
+          ns: MESSAGE_NS,
+          type: RUNTIME_MESSAGES.CANCEL_BATCH_RENAME
+        });
+      } finally {
+        els.optStopBatchBtn.disabled = false;
+      }
+    });
     els.enabledCheckbox.addEventListener("change", () => {
       saveSettings({ enabled: els.enabledCheckbox.checked });
     });
@@ -830,6 +1107,9 @@
         }
         if (changes[STORAGE_KEYS.HISTORY]) {
           renderHistory(changes[STORAGE_KEYS.HISTORY].newValue || []);
+        }
+        if (changes[STORAGE_KEYS.BATCH_STATUS]) {
+          renderOptBatchStatus(changes[STORAGE_KEYS.BATCH_STATUS].newValue || null);
         }
         if (changes[STORAGE_KEYS.SETTINGS]?.newValue) {
           const s = changes[STORAGE_KEYS.SETTINGS].newValue;

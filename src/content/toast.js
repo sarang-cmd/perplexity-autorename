@@ -52,6 +52,13 @@ function ensurePixelFontFaces(doc, chromeObj) {
       font-display: swap;
       src: url("${getUrl("fonts/Inter-SemiBold.woff2")}") format("woff2");
     }
+    @font-face {
+      font-family: "PPX JetBrains Mono";
+      font-style: normal;
+      font-weight: 500;
+      font-display: swap;
+      src: url("${getUrl("fonts/JetBrainsMono-Medium.woff2")}") format("woff2");
+    }
   `;
   doc.head.appendChild(style);
 }
@@ -229,6 +236,86 @@ const SHADOW_CSS = `
     font-size: 14px;
     font-weight: 600;
   }
+
+  .progress-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .progress-wrap.hidden {
+    display: none !important;
+  }
+
+  .progress-track {
+    width: 100%;
+    height: 10px;
+    background: #0b161c;
+    border: 1px solid #254656;
+    padding: 1px;
+    box-sizing: border-box;
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: repeating-linear-gradient(
+      90deg,
+      #2dd4bf 0px,
+      #2dd4bf 7px,
+      #0f766e 7px,
+      #0f766e 9px
+    );
+  }
+
+  .footer-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .footer-row.hidden {
+    display: none !important;
+  }
+
+  .footer-sub {
+    font-family: "PPX JetBrains Mono", "PPX Inter", monospace;
+    font-size: 11px;
+    color: #94a3b8;
+    min-width: 0;
+  }
+
+  .action-btn {
+    appearance: none;
+    border: 1px solid #2dd4bf;
+    background: #153b40;
+    color: #5eead4;
+    box-shadow: 2px 2px 0 #050b0e;
+    font-family: "PPX Silkscreen", monospace;
+    font-size: 10px;
+    line-height: 1.1;
+    padding: 4px 8px;
+    cursor: pointer;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+
+  .action-btn:hover {
+    background: #2dd4bf;
+    color: #050b0e;
+  }
+
+  .action-btn.danger {
+    border-color: #f87171;
+    background: #35161b;
+    color: #fca5a5;
+  }
+
+  .action-btn.danger:hover {
+    background: #f87171;
+    color: #050b0e;
+  }
 `;
 
 export function createRenameToaster({
@@ -243,6 +330,12 @@ export function createRenameToaster({
   let spinnerEl = null;
   let pillEl = null;
   let bodyEl = null;
+  let progressWrapEl = null;
+  let progressFillEl = null;
+  let footerRowEl = null;
+  let footerSubEl = null;
+  let actionBtnEl = null;
+  let actionHandler = null;
   let hideTimer = null;
 
   let state = "idle";
@@ -255,6 +348,23 @@ export function createRenameToaster({
     if (hideTimer) {
       clearTimeout(hideTimer);
       hideTimer = null;
+    }
+  }
+
+  function resetExtras() {
+    actionHandler = null;
+    if (progressWrapEl) progressWrapEl.className = "progress-wrap hidden";
+    if (footerRowEl) footerRowEl.className = "footer-row hidden";
+    if (actionBtnEl) actionBtnEl.className = "action-btn hidden";
+  }
+
+  function setFillWidth(pct) {
+    if (!progressFillEl) return;
+    const clamped = `${Math.max(4, Math.min(100, Math.round(pct)))}%`;
+    if (progressFillEl.style) {
+      progressFillEl.style.width = clamped;
+    } else {
+      progressFillEl.setAttribute("style", `width:${clamped}`);
     }
   }
 
@@ -329,7 +439,30 @@ export function createRenameToaster({
     bodyEl = doc.createElement("div");
     bodyEl.className = "body-msg";
 
-    cardEl.append(hdr, bodyEl);
+    progressWrapEl = doc.createElement("div");
+    progressWrapEl.className = "progress-wrap hidden";
+    const trackEl = doc.createElement("div");
+    trackEl.className = "progress-track";
+    progressFillEl = doc.createElement("div");
+    progressFillEl.className = "progress-fill";
+    trackEl.appendChild(progressFillEl);
+    progressWrapEl.appendChild(trackEl);
+
+    footerRowEl = doc.createElement("div");
+    footerRowEl.className = "footer-row hidden";
+    footerSubEl = doc.createElement("span");
+    footerSubEl.className = "footer-sub";
+    actionBtnEl = doc.createElement("button");
+    actionBtnEl.type = "button";
+    actionBtnEl.className = "action-btn";
+    actionBtnEl.addEventListener("click", () => {
+      if (typeof actionHandler === "function") {
+        actionHandler();
+      }
+    });
+    footerRowEl.append(footerSubEl, actionBtnEl);
+
+    cardEl.append(hdr, bodyEl, progressWrapEl, footerRowEl);
     shadow.append(styleEl, cardEl);
     parent.appendChild(host);
     return true;
@@ -337,20 +470,23 @@ export function createRenameToaster({
 
   function dismiss() {
     clearTimer();
+    resetExtras();
     state = "idle";
     if (cardEl) {
       cardEl.classList.add("hidden");
     }
   }
 
-  function canDisplay() {
-    return Boolean(settings.enabled && settings.showToast);
+  function canDisplay(forceShow = false) {
+    if (!settings.showToast) return false;
+    return forceShow ? true : Boolean(settings.enabled);
   }
 
   function showWatching() {
     clearTimer();
-    if (!canDisplay()) return;
+    if (!canDisplay(false)) return;
     if (!ensureMounted()) return;
+    resetExtras();
 
     state = "watching";
     cardEl.dataset.state = "watching";
@@ -362,48 +498,159 @@ export function createRenameToaster({
     bodyEl.textContent = "Answer streaming - will auto-rename when complete.";
   }
 
-  function showRenaming({ step = "Generating 3-7 word title..." } = {}) {
+  function showRenaming({
+    step = "Generating 3-7 word title...",
+    label = "RENAMING THREAD_",
+    forceShow = false,
+  } = {}) {
     clearTimer();
-    if (!canDisplay()) return;
+    if (!canDisplay(forceShow)) return;
     if (!ensureMounted()) return;
+    resetExtras();
 
     state = "renaming";
     cardEl.dataset.state = "renaming";
     cardEl.classList.remove("hidden");
-    labelEl.textContent = "RENAMING THREAD_";
+    labelEl.textContent = label;
     spinnerEl.classList.remove("hidden");
     pillEl.className = "pill hidden";
     bodyEl.className = "body-msg";
     bodyEl.textContent = step;
   }
 
-  function showSuccess({ title = "", source = "llm" } = {}) {
+  function showSuccess({
+    title = "",
+    source = "llm",
+    label = "✓ THREAD RENAMED",
+    onRegenerate = null,
+    forceShow = false,
+  } = {}) {
     clearTimer();
-    if (!canDisplay()) return;
+    if (!canDisplay(forceShow)) return;
     if (!ensureMounted()) return;
+    resetExtras();
 
     const isFallback = source === "heuristic";
     state = "success";
     cardEl.dataset.state = isFallback ? "warn" : "success";
     cardEl.classList.remove("hidden");
-    labelEl.textContent = "✓ THREAD RENAMED";
+    labelEl.textContent = label;
     spinnerEl.classList.add("hidden");
     pillEl.className = `pill${isFallback ? " warn" : ""}`;
     pillEl.textContent = isFallback ? "FALLBACK" : "LLM";
     bodyEl.className = "body-msg title-box";
     bodyEl.textContent = title || "Thread renamed";
 
+    if (typeof onRegenerate === "function") {
+      actionHandler = onRegenerate;
+      footerSubEl.textContent = "Want another variation?";
+      actionBtnEl.className = "action-btn";
+      actionBtnEl.textContent = "↻ REGEN";
+      footerRowEl.className = "footer-row";
+    }
+
     if (autoHideSuccessMs > 0) {
       hideTimer = setTimeout(() => {
         dismiss();
-      }, autoHideSuccessMs);
+      }, typeof onRegenerate === "function" ? Math.max(autoHideSuccessMs, 6500) : autoHideSuccessMs);
     }
   }
 
-  function showError({ message = "Could not rename thread." } = {}) {
+  function showBatchProgress({
+    phase = "renaming",
+    processed = 0,
+    total = 0,
+    renamed = 0,
+    skipped = 0,
+    currentTitle = "",
+    label = "Library",
+    onCancel = null,
+  } = {}) {
     clearTimer();
-    if (!canDisplay()) return;
+    if (!canDisplay(true)) return;
     if (!ensureMounted()) return;
+    resetExtras();
+
+    const isScan = phase === "scanning";
+    const pct = isScan
+      ? 12
+      : total > 0
+        ? Math.round((processed / total) * 100)
+        : 15;
+
+    state = "batch";
+    cardEl.dataset.state = "renaming";
+    cardEl.classList.remove("hidden");
+    labelEl.textContent = isScan ? "SCANNING LIBRARY_" : "BATCH RENAMING_";
+    spinnerEl.classList.remove("hidden");
+    pillEl.className = "pill";
+    pillEl.textContent = isScan ? "SCAN" : `${pct}%`;
+
+    bodyEl.className = "body-msg";
+    bodyEl.textContent = isScan
+      ? `Scanning Perplexity Library (${label})…`
+      : currentTitle
+        ? `${processed}/${total}: ${currentTitle}`
+        : `Processing ${processed} of ${total} chats…`;
+
+    progressWrapEl.className = "progress-wrap";
+    setFillWidth(pct);
+
+    footerSubEl.textContent = isScan
+      ? `${processed} threads found`
+      : `${renamed} renamed · ${skipped} skipped`;
+
+    if (typeof onCancel === "function") {
+      actionHandler = onCancel;
+      actionBtnEl.className = "action-btn danger";
+      actionBtnEl.textContent = "■ STOP";
+    } else {
+      actionBtnEl.className = "action-btn hidden";
+    }
+    footerRowEl.className = "footer-row";
+  }
+
+  function showBatchSummary({
+    renamed = 0,
+    skipped = 0,
+    failed = 0,
+    cancelled = false,
+    message = "",
+  } = {}) {
+    clearTimer();
+    if (!canDisplay(true)) return;
+    if (!ensureMounted()) return;
+    resetExtras();
+
+    state = "success";
+    cardEl.dataset.state = failed > 0 && renamed === 0 ? "warn" : "success";
+    cardEl.classList.remove("hidden");
+    labelEl.textContent = cancelled ? "BATCH STOPPED" : "✓ BATCH COMPLETE";
+    spinnerEl.classList.add("hidden");
+    pillEl.className = `pill${cancelled ? " warn" : ""}`;
+    pillEl.textContent = cancelled ? "STOPPED" : "DONE";
+    bodyEl.className = "body-msg title-box";
+    bodyEl.textContent =
+      message ||
+      `${renamed} chat${renamed === 1 ? "" : "s"} renamed${
+        skipped > 0 ? ` · ${skipped} skipped` : ""
+      }`;
+
+    if (autoHideSuccessMs > 0) {
+      hideTimer = setTimeout(() => {
+        dismiss();
+      }, Math.max(autoHideSuccessMs, 6500));
+    }
+  }
+
+  function showError({
+    message = "Could not rename thread.",
+    forceShow = false,
+  } = {}) {
+    clearTimer();
+    if (!canDisplay(forceShow)) return;
+    if (!ensureMounted()) return;
+    resetExtras();
 
     state = "error";
     cardEl.dataset.state = "error";
@@ -426,7 +673,7 @@ export function createRenameToaster({
       ...settings,
       ...next,
     };
-    if (!canDisplay()) {
+    if (!settings.showToast || (!settings.enabled && state === "watching")) {
       dismiss();
     }
   }
@@ -450,6 +697,8 @@ export function createRenameToaster({
     showWatching,
     showRenaming,
     showSuccess,
+    showBatchProgress,
+    showBatchSummary,
     showError,
     clearIfWatching,
     dismiss,

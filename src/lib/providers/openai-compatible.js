@@ -147,6 +147,8 @@ export async function callOpenAiCompatible({
   apiKey,
   question,
   answer,
+  avoidTitles = [],
+  regenerate = false,
   fetchImpl = fetch,
   signal,
 }) {
@@ -177,11 +179,13 @@ export async function callOpenAiCompatible({
       ? "max_completion_tokens"
       : "max_tokens";
 
+  const temp = regenerate || (Array.isArray(avoidTitles) && avoidTitles.length > 0) ? 0.65 : 0.2;
+
   const body = {
     model: chosenModel,
     messages: [
       { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: buildUserPrompt(question, answer) },
+      { role: "user", content: buildUserPrompt(question, answer, { avoidTitles }) },
     ],
     [tokenField]: MAX_OUTPUT_TOKENS,
   };
@@ -190,8 +194,11 @@ export async function callOpenAiCompatible({
   // so thinking tokens do not exhaust the output budget and return an empty title.
   if (/gpt-oss/i.test(chosenModel) || /^sarvam-105b$/i.test(chosenModel)) {
     body.reasoning_effort = "low";
+    if (regenerate) {
+      body.temperature = temp;
+    }
   } else if (!/^(?:o[134](?:-|$)|gpt-5)/i.test(chosenModel)) {
-    body.temperature = 0.2;
+    body.temperature = temp;
   }
 
   const response = await fetchImpl(endpoint, {

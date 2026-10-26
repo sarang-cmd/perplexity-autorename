@@ -14,6 +14,7 @@ import {
   hasApiKey,
   setApiKey,
   getLastStatus,
+  getBatchStatus,
 } from "../lib/storage.js";
 import {
   PROVIDER_LIST,
@@ -31,6 +32,21 @@ const els = {
   statusSummary: document.getElementById("popup-status-summary"),
   statusBadge: document.getElementById("popup-status-badge"),
   statusDetail: document.getElementById("popup-status-detail"),
+
+  openChatBadge: document.getElementById("popup-open-chat-badge"),
+  renameCurrentBtn: document.getElementById("popup-rename-current-btn"),
+  regenCurrentBtn: document.getElementById("popup-regen-current-btn"),
+  currentFeedback: document.getElementById("popup-current-feedback"),
+  batchPreset: document.getElementById("popup-batch-preset"),
+  batchCustom: document.getElementById("popup-batch-custom"),
+  skipRenamed: document.getElementById("popup-skip-renamed"),
+  startBatchBtn: document.getElementById("popup-start-batch-btn"),
+  stopBatchBtn: document.getElementById("popup-stop-batch-btn"),
+  batchProgress: document.getElementById("popup-batch-progress"),
+  batchLabel: document.getElementById("popup-batch-label"),
+  batchPct: document.getElementById("popup-batch-pct"),
+  batchFill: document.getElementById("popup-batch-fill"),
+  batchStats: document.getElementById("popup-batch-stats"),
 
   provider: document.getElementById("popup-provider"),
   model: document.getElementById("popup-model"),
@@ -55,6 +71,97 @@ let lastProvider = "groq";
 function showFeedback(kind, text) {
   els.feedback.className = `feedback visible ${kind}`;
   els.feedback.textContent = text;
+}
+
+function showCurrentFeedback(kind, text) {
+  if (!els.currentFeedback) return;
+  els.currentFeedback.className = `feedback visible ${kind}`;
+  els.currentFeedback.textContent = text;
+}
+
+function buildPopupBatchSpec() {
+  const raw = els.batchPreset?.value || "count:50";
+  const skipAlreadyRenamed = Boolean(els.skipRenamed?.checked);
+  if (raw === "all") return { mode: "all", skipAlreadyRenamed };
+  if (raw === "custom-count") {
+    return {
+      mode: "count",
+      count: Math.max(1, Math.min(5000, Number(els.batchCustom?.value) || 100)),
+      skipAlreadyRenamed,
+    };
+  }
+  if (raw === "custom-days") {
+    return {
+      mode: "days",
+      days: Math.max(1, Math.min(3650, Number(els.batchCustom?.value) || 14)),
+      skipAlreadyRenamed,
+    };
+  }
+  const [mode, num] = raw.split(":");
+  return mode === "days"
+    ? { mode: "days", days: Math.max(1, Number(num) || 30), skipAlreadyRenamed }
+    : { mode: "count", count: Math.max(1, Number(num) || 50), skipAlreadyRenamed };
+}
+
+function renderActiveThreadBadge(activeThread) {
+  if (!els.openChatBadge) return;
+  if (activeThread?.isThreadOpen) {
+    els.openChatBadge.className = "badge ok";
+    els.openChatBadge.textContent = "CHAT OPEN";
+  } else if (activeThread?.hasPerplexityTab) {
+    els.openChatBadge.className = "badge warn";
+    els.openChatBadge.textContent = "HOME / LIBRARY";
+  } else {
+    els.openChatBadge.className = "badge";
+    els.openChatBadge.textContent = "NO TAB";
+  }
+}
+
+function renderBatchStatus(batch) {
+  if (!els.batchProgress) return;
+  if (!batch) {
+    els.batchProgress.classList.add("hidden");
+    els.startBatchBtn?.classList.remove("hidden");
+    els.stopBatchBtn?.classList.add("hidden");
+    return;
+  }
+
+  const running = Boolean(batch.running);
+  els.batchProgress.classList.remove("hidden");
+  els.batchProgress.classList.toggle("running", running);
+  els.startBatchBtn?.classList.toggle("hidden", running);
+  els.stopBatchBtn?.classList.toggle("hidden", !running);
+
+  if (running) {
+    const isScan = batch.phase === "scanning";
+    const pct = isScan
+      ? 12
+      : batch.total > 0
+        ? Math.round((batch.processed / batch.total) * 100)
+        : 15;
+    els.batchLabel.textContent =
+      batch.message ||
+      (isScan
+        ? "Scanning library…"
+        : `Renaming ${batch.processed}/${batch.total}…`);
+    els.batchPct.textContent = isScan ? "SCAN" : `${pct}%`;
+    els.batchFill.style.width = `${Math.max(6, Math.min(100, pct))}%`;
+    els.batchStats.textContent = isScan
+      ? `${batch.scanned || 0} chats discovered`
+      : `${batch.renamed || 0} renamed · ${batch.skipped || 0} skipped`;
+  } else {
+    const isErr = batch.state === "error";
+    const pct =
+      batch.total > 0
+        ? Math.round(((batch.processed || 0) / batch.total) * 100)
+        : 100;
+    els.batchLabel.textContent = batch.message || "Batch complete";
+    els.batchPct.textContent = isErr ? "ERR" : `${pct}%`;
+    els.batchFill.style.width = `${isErr ? 100 : Math.max(0, Math.min(100, pct))}%`;
+    els.batchStats.textContent = `${batch.renamed || 0} renamed · ${batch.skipped || 0} skipped${
+      batch.failed ? ` · ${batch.failed} failed` : ""
+    }`;
+  }
 }
 
 function renderStatus(status) {
@@ -195,9 +302,15 @@ async function init() {
     els.provider.appendChild(opt);
   }
 
-  const [settings, lastStatus] = await Promise.all([
+  const [settings, lastStatus, storedBatch, swState] = await Promise.all([
     getSettings(),
     getLastStatus(),
+    getBatchStatus(),
+    chrome?.runtime?.sendMessage
+      ? chrome.runtime
+          .sendMessage({ ns: MESSAGE_NS, type: RUNTIME_MESSAGES.GET_STATE })
+          .catch(() => null)
+      : Promise.resolve(null),
   ]);
 
   lastProvider = settings.provider;
@@ -211,6 +324,10 @@ async function init() {
 
   els.customUrlWrap.classList.toggle("hidden", settings.provider !== "custom");
   renderStatus(lastStatus);
+  renderBatchStatus(swState?.batchStatus || storedBatch);
+  if (swState?.activeThread) {
+    renderActiveThreadBadge(swState.activeThread);
+  }
   await refreshKeyBadge(settings.provider);
   await refreshHostPerm();
 
@@ -307,6 +424,120 @@ async function init() {
     }
   });
 
+  async function runOpenChatAction(regenerate) {
+    await requestPermFromGesture();
+    els.renameCurrentBtn.disabled = true;
+    els.regenCurrentBtn.disabled = true;
+    showCurrentFeedback(
+      "warn",
+      regenerate ? "Regenerating fresh title…" : "Renaming open chat…"
+    );
+    try {
+      const res = await chrome.runtime.sendMessage({
+        ns: MESSAGE_NS,
+        type: RUNTIME_MESSAGES.RENAME_CURRENT_CHAT,
+        regenerate,
+      });
+      if (res?.ok && res.title) {
+        showCurrentFeedback(
+          "ok",
+          `${regenerate ? "Regenerated" : "Renamed"}: "${res.title}"`
+        );
+      } else {
+        showCurrentFeedback(
+          "err",
+          res?.error || "Open a Perplexity chat (/search/...) first."
+        );
+      }
+    } catch (err) {
+      showCurrentFeedback("err", err?.message || "Could not reach Perplexity tab.");
+    } finally {
+      els.renameCurrentBtn.disabled = false;
+      els.regenCurrentBtn.disabled = false;
+    }
+  }
+
+  els.renameCurrentBtn?.addEventListener("click", () => {
+    runOpenChatAction(false);
+  });
+
+  els.regenCurrentBtn?.addEventListener("click", () => {
+    runOpenChatAction(true);
+  });
+
+  els.batchPreset?.addEventListener("change", () => {
+    const val = els.batchPreset.value;
+    if (val === "custom-count") {
+      els.batchCustom.classList.remove("hidden");
+      els.batchCustom.value = "100";
+    } else if (val === "custom-days") {
+      els.batchCustom.classList.remove("hidden");
+      els.batchCustom.value = "14";
+    } else {
+      els.batchCustom.classList.add("hidden");
+    }
+  });
+
+  els.startBatchBtn?.addEventListener("click", async () => {
+    await requestPermFromGesture();
+    const spec = buildPopupBatchSpec();
+    els.startBatchBtn.disabled = true;
+    renderBatchStatus({
+      running: true,
+      phase: "scanning",
+      scanned: 0,
+      processed: 0,
+      total: 0,
+      renamed: 0,
+      skipped: 0,
+      message: "Starting library scan on Perplexity…",
+    });
+    try {
+      const res = await chrome.runtime.sendMessage({
+        ns: MESSAGE_NS,
+        type: RUNTIME_MESSAGES.START_BATCH_RENAME,
+        spec,
+      });
+      if (!res?.ok) {
+        renderBatchStatus({
+          running: false,
+          state: "error",
+          processed: 0,
+          total: 0,
+          renamed: 0,
+          skipped: 0,
+          failed: 1,
+          message: res?.error || "Could not start batch library rename.",
+        });
+      }
+    } catch (err) {
+      renderBatchStatus({
+        running: false,
+        state: "error",
+        processed: 0,
+        total: 0,
+        renamed: 0,
+        skipped: 0,
+        failed: 1,
+        message: err?.message || "Service worker error",
+      });
+    } finally {
+      els.startBatchBtn.disabled = false;
+    }
+  });
+
+  els.stopBatchBtn?.addEventListener("click", async () => {
+    els.stopBatchBtn.disabled = true;
+    try {
+      await chrome.runtime.sendMessage({
+        ns: MESSAGE_NS,
+        type: RUNTIME_MESSAGES.CANCEL_BATCH_RENAME,
+      });
+    } finally {
+      els.stopBatchBtn.disabled = false;
+    }
+  });
+
   els.openOptions.addEventListener("click", () => {
     chrome.runtime.openOptionsPage();
   });
@@ -316,6 +547,9 @@ async function init() {
       if (area !== "local") return;
       if (changes[STORAGE_KEYS.LAST_STATUS]) {
         renderStatus(changes[STORAGE_KEYS.LAST_STATUS].newValue);
+      }
+      if (changes[STORAGE_KEYS.BATCH_STATUS]) {
+        renderBatchStatus(changes[STORAGE_KEYS.BATCH_STATUS].newValue || null);
       }
     });
   }

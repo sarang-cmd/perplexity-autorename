@@ -13,7 +13,7 @@
 [![Privacy](docs/assets/badges/telemetry.svg)](https://perplexity-autorename.vercel.app/privacy-policy.html)
 [![License: MIT](docs/assets/badges/license.svg)](LICENSE)
 
-[**Live Website & Interactive Simulator ↗**](https://perplexity-autorename.vercel.app) · [**Download v0.1.0 (.zip)**](https://perplexity-autorename.vercel.app/?download=1#install) · [**60-Second Install**](#quick-start-install-unpacked-in-60-seconds) · [**Architecture Deep-Dive**](#how-it-actually-works-deep-dive) · [**Privacy Policy**](https://perplexity-autorename.vercel.app/privacy-policy.html)
+[**Live Website & Interactive Simulator ↗**](https://perplexity-autorename.vercel.app) · [**Download v0.2.0 (.zip)**](https://perplexity-autorename.vercel.app/?download=1#install) · [**60-Second Install**](#quick-start-install-unpacked-in-60-seconds) · [**Architecture Deep-Dive**](#how-it-actually-works-deep-dive) · [**Privacy Policy**](https://perplexity-autorename.vercel.app/privacy-policy.html)
 
 <br />
 
@@ -90,7 +90,10 @@ Configure providers and host permissions, define line-by-line regular-expression
 4. **100% Local / Air-Gapped Mode (Ollama, LM Studio, or Offline Heuristic):**
    - Point **Custom Base URL** at `http://localhost:11434/v1` (Ollama) or `http://127.0.0.1:1234/v1` (LM Studio) to generate LLM titles entirely on your own hardware.
    - Or use the extension with **no API key at all**—the built-in deterministic keyword extractor (`heuristicTitle()`) generates clean 3–7 word titles offline with zero network calls.
-5. **Never Fights Manual Edits or Follow-Ups:**
+5. **Retroactive Batch Library Cleanup & On-Demand Regenerate (`v0.2.0`):**
+   - **Open Chat Actions:** Click **Rename Chat** or **↻ Regenerate** in the toolbar popup (or `↻ REGEN` right on the bottom-right HUD toast) to rename any open `/search/<slug>` thread or generate a fresh non-repeating variation on demand.
+   - **Batch Library Renamer:** Clean up existing history in one click — **Past 50 Chats**, **Past 20 Chats**, **Last 20 Days**, **Last 30 Days**, **Custom Count / Days**, or **Rename All Library Chats** — with live progress, polite pacing, skip-already-renamed toggle, and instant **■ Stop**.
+6. **Never Fights Manual Edits or Follow-Ups:**
    If you manually rename a thread in Perplexity's UI, Auto-Rename intercepts that outgoing edit and permanently locks out auto-renaming for that `context_uuid`. Follow-up questions in existing threads are skipped automatically so your titles stay stable.
 
 ---
@@ -98,7 +101,7 @@ Configure providers and host permissions, define line-by-line regular-expression
 ## Quick Start (Install Unpacked in 60 Seconds)
 
 ### Option A — Download the Prebuilt Release ZIP (No Node.js Needed)
-1. Download **`auto-rename-for-perplexity-v0.1.0.zip`** from **[perplexity-autorename.vercel.app](https://perplexity-autorename.vercel.app/?download=1#install)** or the GitHub [Releases](../../releases) page, and unzip it.
+1. Download **`auto-rename-for-perplexity-v0.2.0.zip`** from **[perplexity-autorename.vercel.app](https://perplexity-autorename.vercel.app/?download=1#install)** or the GitHub [Releases](../../releases) page, and unzip it.
 2. Open `chrome://extensions` in Chrome / Brave / Arc / Edge and enable **Developer mode** (top right).
 3. Click **Load unpacked** and select the unzipped folder.
 
@@ -255,7 +258,7 @@ Modern fast/reasoning models have subtle API differences that break generic Open
     ├── index.html                 # Interactive Pixel HUD Landing Page (Vercel & GitHub Pages ready)
     ├── styles.css                 # Landing page & privacy policy pixel stylesheet
     ├── site.js                    # Live stream/HUD simulator & 10-provider inspector
-    ├── release-bundle.js          # Self-contained v0.1.0 extension ZIP payload (zero-404 download)
+    ├── release-bundle.js          # Self-contained v0.2.0 extension ZIP payload (zero-404 download)
     ├── assets/                    # Pixel SVG logo, fonts, architecture diagram, banner & screenshots
     ├── FONT-LICENSES.md           # SIL Open Font License 1.1 notices (Silkscreen, Inter, JetBrains Mono)
     ├── CHROME_WEB_STORE_GUIDE.md  # Full Chrome Web Store publishing guide (for future launch)

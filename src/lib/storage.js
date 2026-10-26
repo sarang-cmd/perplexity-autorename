@@ -14,10 +14,11 @@ export const STORAGE_KEYS = {
   RENAMED_IDS: "renamedIds",
   HISTORY: "renameHistory",
   LAST_STATUS: "lastStatus",
+  BATCH_STATUS: "batchStatus",
 };
 
-export const MAX_RENAMED_IDS = 300;
-export const MAX_HISTORY_ENTRIES = 50;
+export const MAX_RENAMED_IDS = 2000;
+export const MAX_HISTORY_ENTRIES = 200;
 
 export const DEFAULT_SETTINGS = Object.freeze({
   enabled: true,
@@ -205,5 +206,21 @@ export async function setLastStatus(statusObj, storageArea) {
     ...statusObj,
   };
   await store.set({ [STORAGE_KEYS.LAST_STATUS]: payload });
+  return payload;
+}
+
+export async function getBatchStatus(storageArea) {
+  const store = resolveStorage(storageArea);
+  const raw = await store.get(STORAGE_KEYS.BATCH_STATUS);
+  return raw?.[STORAGE_KEYS.BATCH_STATUS] || null;
+}
+
+export async function setBatchStatus(statusObj, storageArea) {
+  const store = resolveStorage(storageArea);
+  const payload = {
+    timestamp: Date.now(),
+    ...statusObj,
+  };
+  await store.set({ [STORAGE_KEYS.BATCH_STATUS]: payload });
   return payload;
 }

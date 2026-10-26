@@ -34,6 +34,8 @@ export async function callGemini({
   apiKey,
   question,
   answer,
+  avoidTitles = [],
+  regenerate = false,
   fetchImpl = fetch,
   signal,
 }) {
@@ -51,9 +53,11 @@ export async function callGemini({
   const trimmedKey = typeof apiKey === "string" ? apiKey.trim() : "";
   const endpoint = `${trimmedBase}/models/${encodeURIComponent(cleanModel)}:generateContent`;
 
+  const temp = regenerate || (Array.isArray(avoidTitles) && avoidTitles.length > 0) ? 0.65 : 0.2;
+
   const generationConfig = {
     maxOutputTokens: MAX_OUTPUT_TOKENS,
-    temperature: 0.2,
+    temperature: temp,
   };
 
   // Disable thinking budget on Gemini 2.5 Flash so thinking doesn't consume output tokens
@@ -68,7 +72,7 @@ export async function callGemini({
     contents: [
       {
         role: "user",
-        parts: [{ text: buildUserPrompt(question, answer) }],
+        parts: [{ text: buildUserPrompt(question, answer, { avoidTitles }) }],
       },
     ],
     generationConfig,

@@ -6,7 +6,157 @@ var RUNTIME_MESSAGES = {
   RECORD_RENAME: "record-rename",
   RECORD_STATUS: "record-status",
   TEST_PROVIDER: "test-provider",
-  SETTINGS_UPDATED: "settings-updated"
+  SETTINGS_UPDATED: "settings-updated",
+  PING_CONTENT: "ping-content",
+  RENAME_CURRENT_CHAT: "rename-current-chat",
+  START_BATCH_RENAME: "start-batch-rename",
+  CANCEL_BATCH_RENAME: "cancel-batch-rename",
+  GET_BATCH_STATUS: "get-batch-status",
+  UPDATE_BATCH_STATUS: "update-batch-status"
+};
+var PERPLEXITY_CONFIG = {
+  origin: "https://www.perplexity.ai",
+  hostPattern: "https://www.perplexity.ai/*",
+  searchPathPrefix: "/search/",
+  apiVersion: "2.18",
+  apiClient: "default",
+  source: "default",
+  renameRequestReason: "thread-item",
+  libraryRequestReason: "library",
+  defaultLibraryPageSize: 20,
+  endpoints: {
+    askStreamPath: "/rest/sse/perplexity_ask",
+    renamePath: "/rest/thread/set_thread_title",
+    sessionPath: "/api/auth/session",
+    listThreadsPath: "/rest/thread/list_ask_threads",
+    listPinnedThreadsPath: "/rest/thread/list_pinned_ask_threads",
+    threadDetailPathPrefix: "/rest/thread/"
+  },
+  queryParams: {
+    version: "version",
+    source: "source"
+  },
+  threadDetailQueryParams: {
+    withParentInfo: "with_parent_info",
+    withSchematizedResponse: "with_schematized_response",
+    limit: "limit",
+    offset: "offset",
+    fromFirst: "from_first"
+  },
+  listRequestFields: {
+    limit: "limit",
+    offset: "offset",
+    ascending: "ascending",
+    searchTerm: "search_term"
+  },
+  listItemFields: {
+    contextUuid: "context_uuid",
+    contextUuidAlt: "contextUUID",
+    slug: "slug",
+    backendUuid: "backend_uuid",
+    uuid: "uuid",
+    title: "title",
+    name: "name",
+    queryStr: "query_str",
+    firstMessagePreview: "first_message_preview",
+    readWriteToken: "read_write_token",
+    readWriteTokenAlt: "readWriteToken",
+    lastQueryDatetime: "last_query_datetime",
+    updatedDatetime: "updated_datetime",
+    createdDatetime: "created_datetime",
+    createdAt: "created_at",
+    updatedAt: "updated_at",
+    queryCount: "query_count",
+    status: "status",
+    completedStatus: "COMPLETED",
+    hasNextPage: "has_next_page",
+    containerKeys: ["threads", "items", "data", "results"]
+  },
+  threadDetailFields: {
+    entries: "entries",
+    hasNextPage: "has_next_page",
+    contextUuid: "context_uuid",
+    contextUuidAlt: "contextUUID",
+    readWriteToken: "read_write_token",
+    readWriteTokenAlt: "readWriteToken",
+    backendUuid: "backend_uuid",
+    uuid: "uuid",
+    status: "status",
+    completedStatus: "COMPLETED",
+    queryStr: "query_str",
+    query: "query",
+    title: "title",
+    threadTitle: "thread_title",
+    thread: "thread",
+    entryCreatedDatetime: "entry_created_datetime",
+    entryUpdatedDatetime: "entry_updated_datetime",
+    blocks: "blocks"
+  },
+  headers: {
+    contentType: "Content-Type",
+    apiClient: "x-app-apiclient",
+    apiVersion: "x-app-apiversion",
+    requestReason: "x-perplexity-request-reason",
+    account: "x-pplx-account",
+    requestId: "x-request-id"
+  },
+  askRequestFields: {
+    params: "params",
+    queryStr: "query_str",
+    fallbackQuery: "query",
+    lastBackendUuid: "last_backend_uuid",
+    isRelatedQuery: "is_related_query"
+  },
+  renameBodyFields: {
+    contextUuid: "context_uuid",
+    title: "title",
+    readWriteToken: "read_write_token"
+  },
+  sessionFields: {
+    user: "user",
+    userId: "id"
+  },
+  streamFields: {
+    eventPrefix: "event:",
+    dataPrefix: "data:",
+    commentPrefix: ":",
+    messageEvent: "message",
+    endEvent: "end_of_stream",
+    status: "status",
+    completedStatus: "COMPLETED",
+    final: "final",
+    finalSseMessage: "final_sse_message",
+    contextUuid: "context_uuid",
+    contextUuidAlt: "contextUUID",
+    readWriteToken: "read_write_token",
+    readWriteTokenAlt: "readWriteToken",
+    backendUuid: "backend_uuid",
+    backendUuidAlt: "backendUUID",
+    nestedContainers: ["entry", "thread", "metadata"],
+    itemType: "type",
+    workflowItemText: "WORKFLOW_ITEM_TEXT",
+    payload: "payload",
+    textPayload: "text_payload",
+    variant: "variant",
+    answerVariant: "answer",
+    text: "text",
+    chunks: "chunks",
+    // Alternate/fallback stream structures
+    blocks: "blocks",
+    intendedUsage: "intended_usage",
+    askTextUsage: "ask_text",
+    askTextSectionPattern: /^ask_text_(\d+)_markdown$/,
+    markdownBlock: "markdown_block",
+    answer: "answer",
+    stepType: "step_type",
+    finalStepType: "FINAL",
+    content: "content"
+  },
+  domMarkers: {
+    pageInjectedAttr: "data-ppx-autorename-page",
+    globalFlag: "__ppxAutorenameInstalled",
+    toastHostId: "ppx-autorename-toast"
+  }
 };
 
 // src/lib/storage.js
@@ -15,10 +165,11 @@ var STORAGE_KEYS = {
   API_KEYS: "apiKeys",
   RENAMED_IDS: "renamedIds",
   HISTORY: "renameHistory",
-  LAST_STATUS: "lastStatus"
+  LAST_STATUS: "lastStatus",
+  BATCH_STATUS: "batchStatus"
 };
-var MAX_RENAMED_IDS = 300;
-var MAX_HISTORY_ENTRIES = 50;
+var MAX_RENAMED_IDS = 2e3;
+var MAX_HISTORY_ENTRIES = 200;
 var DEFAULT_SETTINGS = Object.freeze({
   enabled: true,
   provider: "groq",
@@ -109,6 +260,20 @@ async function setLastStatus(statusObj, storageArea) {
     ...statusObj
   };
   await store.set({ [STORAGE_KEYS.LAST_STATUS]: payload });
+  return payload;
+}
+async function getBatchStatus(storageArea) {
+  const store = resolveStorage(storageArea);
+  const raw = await store.get(STORAGE_KEYS.BATCH_STATUS);
+  return raw?.[STORAGE_KEYS.BATCH_STATUS] || null;
+}
+async function setBatchStatus(statusObj, storageArea) {
+  const store = resolveStorage(storageArea);
+  const payload = {
+    timestamp: Date.now(),
+    ...statusObj
+  };
+  await store.set({ [STORAGE_KEYS.BATCH_STATUS]: payload });
   return payload;
 }
 
@@ -312,7 +477,7 @@ function formatHeuristicWord(word, index) {
   }
   return lower.charAt(0).toUpperCase() + lower.slice(1);
 }
-function extractCandidateWords(source) {
+function extractCandidateWords(source, maxTokens = 7) {
   if (typeof source !== "string" || !source.trim()) {
     return [];
   }
@@ -328,29 +493,58 @@ function extractCandidateWords(source) {
     if (seenLower.has(norm)) continue;
     seenLower.add(norm);
     selected.push(token);
-    if (selected.length >= 7) break;
+    if (selected.length >= maxTokens) break;
   }
   return selected;
 }
-function heuristicTitle(question, answer = "") {
-  const qWords = extractCandidateWords(question);
-  if (qWords.length < 3 && typeof answer === "string" && answer.trim()) {
-    const firstSentence = answer.split(/(?<=[.!?])\s+/)[0] || answer.slice(0, 240);
-    const aWords = extractCandidateWords(firstSentence);
-    const existing = new Set(qWords.map((w) => w.toLowerCase()));
-    for (const w of aWords) {
-      if (!existing.has(w.toLowerCase())) {
-        qWords.push(w);
-        existing.add(w.toLowerCase());
-      }
-      if (qWords.length >= 5) break;
+function buildFormattedSlice(words) {
+  const formatted = words.slice(0, 7).map((w, idx) => formatHeuristicWord(w, idx)).join(" ");
+  return sanitizeTitle(formatted, { maxWords: 7 });
+}
+function heuristicTitle(question, answer = "", { avoidTitles = [] } = {}) {
+  const avoidLower = new Set(
+    Array.isArray(avoidTitles) ? avoidTitles.filter((t) => typeof t === "string" && t.trim()).map((t) => t.trim().toLowerCase()) : []
+  );
+  const qWords = extractCandidateWords(question, 12);
+  const aWords = typeof answer === "string" && answer.trim() ? extractCandidateWords(answer.slice(0, 600), 12) : [];
+  const merged = [...qWords];
+  const existing = new Set(merged.map((w) => w.toLowerCase()));
+  for (const w of aWords) {
+    if (!existing.has(w.toLowerCase())) {
+      merged.push(w);
+      existing.add(w.toLowerCase());
     }
   }
-  if (qWords.length >= 1) {
-    const target = qWords.slice(0, 7);
-    const formatted = target.map((w, idx) => formatHeuristicWord(w, idx)).join(" ");
-    const clean = sanitizeTitle(formatted, { maxWords: 7 });
-    if (clean) return clean;
+  if (merged.length >= 1) {
+    const primaryCount = qWords.length >= 3 ? Math.min(7, qWords.length) : Math.min(5, merged.length);
+    const primary = buildFormattedSlice(merged.slice(0, primaryCount));
+    if (primary && !avoidLower.has(primary.toLowerCase())) {
+      return primary;
+    }
+    const variants = [];
+    if (aWords.length >= 2) {
+      const lead = qWords.slice(0, 2);
+      const leadSet = new Set(lead.map((w) => w.toLowerCase()));
+      const fromAns = aWords.filter((w) => !leadSet.has(w.toLowerCase())).slice(0, 4);
+      variants.push([...lead, ...fromAns]);
+      variants.push([...aWords.slice(0, 4), ...qWords.slice(0, 2)]);
+    }
+    if (merged.length > 3) {
+      variants.push(merged.slice(1, 7));
+      variants.push([...merged.slice(2, 6), merged[0]]);
+      variants.push([...merged.slice(0, 4), "Overview"]);
+      variants.push([...merged.slice(0, 4), "Guide"]);
+    } else if (primary) {
+      variants.push([...merged, "Overview"]);
+      variants.push([...merged, "Summary"]);
+    }
+    for (const v of variants) {
+      const candidate = buildFormattedSlice(v);
+      if (candidate && !avoidLower.has(candidate.toLowerCase())) {
+        return candidate;
+      }
+    }
+    if (primary) return primary;
   }
   const fallbackRaw = sanitizeTitle(question, { maxWords: 6 });
   return fallbackRaw || "New Search Thread";
@@ -380,12 +574,21 @@ var MAX_OUTPUT_TOKENS = 256;
 var MAX_QUESTION_CHARS = 600;
 var MAX_ANSWER_CHARS = 1200;
 var SYSTEM_PROMPT = "You generate concise, descriptive titles for research threads. Write a clear 3 to 7 word title capturing the core topic. Return ONLY the plain title words — no quotes, no markdown, no trailing period, and no 'Title:' prefix.";
-function buildUserPrompt(question, answer = "") {
+function buildUserPrompt(question, answer = "", { avoidTitles = [] } = {}) {
   const q = String(question || "").trim().slice(0, MAX_QUESTION_CHARS);
   const a = String(answer || "").trim().slice(0, MAX_ANSWER_CHARS);
+  const avoidClean = Array.isArray(avoidTitles) ? [
+    ...new Set(
+      avoidTitles.map((t) => typeof t === "string" ? t.trim().slice(0, 120) : "").filter(Boolean)
+    )
+  ].slice(0, 5) : [];
+  const avoidClause = avoidClean.length > 0 ? `
+
+Do NOT repeat these previous titles — write a distinctly worded 3-7 word alternative:
+${avoidClean.map((t) => `- ${t}`).join("\n")}` : "";
   if (!a) {
     return `Question:
-${q}
+${q}${avoidClause}
 
 Generate a 3-7 word thread title:`;
   }
@@ -393,7 +596,7 @@ Generate a 3-7 word thread title:`;
 ${q}
 
 Answer excerpt:
-${a}
+${a}${avoidClause}
 
 Generate a 3-7 word thread title:`;
 }
@@ -543,6 +746,8 @@ async function callOpenAiCompatible({
   apiKey,
   question,
   answer,
+  avoidTitles = [],
+  regenerate = false,
   fetchImpl = fetch,
   signal
 }) {
@@ -565,18 +770,22 @@ async function callOpenAiCompatible({
     headers["Authorization"] = `Bearer ${trimmedKey}`;
   }
   const tokenField = preset.maxTokensField === "max_completion_tokens" || /^(?:o[134](?:-|$)|gpt-5)/i.test(chosenModel) ? "max_completion_tokens" : "max_tokens";
+  const temp = regenerate || Array.isArray(avoidTitles) && avoidTitles.length > 0 ? 0.65 : 0.2;
   const body = {
     model: chosenModel,
     messages: [
       { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: buildUserPrompt(question, answer) }
+      { role: "user", content: buildUserPrompt(question, answer, { avoidTitles }) }
     ],
     [tokenField]: MAX_OUTPUT_TOKENS
   };
   if (/gpt-oss/i.test(chosenModel) || /^sarvam-105b$/i.test(chosenModel)) {
     body.reasoning_effort = "low";
+    if (regenerate) {
+      body.temperature = temp;
+    }
   } else if (!/^(?:o[134](?:-|$)|gpt-5)/i.test(chosenModel)) {
-    body.temperature = 0.2;
+    body.temperature = temp;
   }
   const response = await fetchImpl(endpoint, {
     method: "POST",
@@ -612,6 +821,8 @@ async function callGemini({
   apiKey,
   question,
   answer,
+  avoidTitles = [],
+  regenerate = false,
   fetchImpl = fetch,
   signal
 }) {
@@ -622,9 +833,10 @@ async function callGemini({
   }
   const trimmedKey = typeof apiKey === "string" ? apiKey.trim() : "";
   const endpoint = `${trimmedBase}/models/${encodeURIComponent(cleanModel)}:generateContent`;
+  const temp = regenerate || Array.isArray(avoidTitles) && avoidTitles.length > 0 ? 0.65 : 0.2;
   const generationConfig = {
     maxOutputTokens: MAX_OUTPUT_TOKENS,
-    temperature: 0.2
+    temperature: temp
   };
   if (/^gemini-2\.5-flash/i.test(cleanModel)) {
     generationConfig.thinkingConfig = { thinkingBudget: 0 };
@@ -636,7 +848,7 @@ async function callGemini({
     contents: [
       {
         role: "user",
-        parts: [{ text: buildUserPrompt(question, answer) }]
+        parts: [{ text: buildUserPrompt(question, answer, { avoidTitles }) }]
       }
     ],
     generationConfig
@@ -682,6 +894,8 @@ async function callAnthropic({
   apiKey,
   question,
   answer,
+  avoidTitles = [],
+  regenerate = false,
   fetchImpl = fetch,
   signal
 }) {
@@ -700,15 +914,16 @@ async function callAnthropic({
   if (trimmedKey) {
     headers["x-api-key"] = trimmedKey;
   }
+  const temp = regenerate || Array.isArray(avoidTitles) && avoidTitles.length > 0 ? 0.65 : 0.2;
   const body = {
     model: cleanModel,
     max_tokens: MAX_OUTPUT_TOKENS,
-    temperature: 0.2,
+    temperature: temp,
     system: SYSTEM_PROMPT,
     messages: [
       {
         role: "user",
-        content: buildUserPrompt(question, answer)
+        content: buildUserPrompt(question, answer, { avoidTitles })
       }
     ]
   };
@@ -776,6 +991,8 @@ async function callOpenCodeZen({
   apiKey,
   question,
   answer,
+  avoidTitles = [],
+  regenerate = false,
   fetchImpl = fetch,
   signal
 }) {
@@ -785,7 +1002,8 @@ async function callOpenCodeZen({
     throw new Error("OpenCode Zen: model name is required");
   }
   const trimmedKey = typeof apiKey === "string" && apiKey.trim() ? apiKey.trim() : "public";
-  const userPrompt = buildUserPrompt(question, answer);
+  const userPrompt = buildUserPrompt(question, answer, { avoidTitles });
+  const temp = regenerate || Array.isArray(avoidTitles) && avoidTitles.length > 0 ? 0.65 : 0.2;
   let endpoint;
   let headers = {
     "Content-Type": "application/json",
@@ -807,6 +1025,7 @@ async function callOpenCodeZen({
     body = {
       model: cleanModel,
       max_tokens: MAX_OUTPUT_TOKENS,
+      temperature: temp,
       system: SYSTEM_PROMPT,
       messages: [{ role: "user", content: userPrompt }]
     };
@@ -816,7 +1035,7 @@ async function callOpenCodeZen({
     body = {
       systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
       contents: [{ role: "user", parts: [{ text: userPrompt }] }],
-      generationConfig: { maxOutputTokens: MAX_OUTPUT_TOKENS, temperature: 0.2 }
+      generationConfig: { maxOutputTokens: MAX_OUTPUT_TOKENS, temperature: temp }
     };
   } else {
     endpoint = `${trimmedBase}/chat/completions`;
@@ -827,7 +1046,7 @@ async function callOpenCodeZen({
         { role: "user", content: userPrompt }
       ],
       max_tokens: MAX_OUTPUT_TOKENS,
-      temperature: 0.2
+      temperature: temp
     };
     if (/gpt-oss/i.test(cleanModel)) {
       body.reasoning_effort = "low";
@@ -892,6 +1111,8 @@ async function callProvider({
   customBaseUrl = "",
   question,
   answer = "",
+  avoidTitles = [],
+  regenerate = false,
   fetchImpl = fetch,
   timeoutMs = 15e3
 }) {
@@ -912,6 +1133,8 @@ async function callProvider({
         apiKey: trimmedKey,
         question,
         answer,
+        avoidTitles,
+        regenerate,
         fetchImpl,
         signal: controller.signal
       });
@@ -922,6 +1145,8 @@ async function callProvider({
         apiKey: trimmedKey,
         question,
         answer,
+        avoidTitles,
+        regenerate,
         fetchImpl,
         signal: controller.signal
       });
@@ -932,6 +1157,8 @@ async function callProvider({
         apiKey: trimmedKey,
         question,
         answer,
+        avoidTitles,
+        regenerate,
         fetchImpl,
         signal: controller.signal
       });
@@ -943,6 +1170,8 @@ async function callProvider({
         apiKey: trimmedKey,
         question,
         answer,
+        avoidTitles,
+        regenerate,
         fetchImpl,
         signal: controller.signal
       });
@@ -967,6 +1196,8 @@ async function generateTitleWithFallback({
   apiKey = "",
   question,
   answer = "",
+  avoidTitles = [],
+  regenerate = false,
   fetchImpl = fetch,
   timeoutMs = 15e3
 }) {
@@ -974,6 +1205,15 @@ async function generateTitleWithFallback({
   const spec = getProviderSpec(providerId);
   const model = settings.model || spec.defaultModel;
   const prefix = settings.titlePrefix || "";
+  const normalizedAvoid = Array.isArray(avoidTitles) ? avoidTitles.filter((t) => typeof t === "string" && t.trim()).flatMap((t) => {
+    const clean = t.trim();
+    const trimmedPrefix = String(prefix || "").trim();
+    if (trimmedPrefix && clean.toLowerCase().startsWith(trimmedPrefix.toLowerCase())) {
+      const stripped = clean.slice(trimmedPrefix.length).trim();
+      return stripped ? [clean, stripped] : [clean];
+    }
+    return [clean];
+  }) : [];
   try {
     const llmTitle = await callProvider({
       provider: spec.id,
@@ -982,6 +1222,8 @@ async function generateTitleWithFallback({
       customBaseUrl: settings.customBaseUrl || "",
       question,
       answer,
+      avoidTitles: normalizedAvoid,
+      regenerate,
       fetchImpl,
       timeoutMs
     });
@@ -993,7 +1235,9 @@ async function generateTitleWithFallback({
       error: null
     };
   } catch (err) {
-    const fallback = heuristicTitle(question, answer);
+    const fallback = heuristicTitle(question, answer, {
+      avoidTitles: normalizedAvoid
+    });
     return {
       title: applyTitlePrefix(fallback, prefix),
       source: "heuristic",
@@ -1023,22 +1267,217 @@ async function checkHostPermission(providerId, customBaseUrl, permissionsApi) {
     return true;
   }
 }
+async function queryTabsSafe(tabsApi, queryInfo) {
+  if (!tabsApi?.query) return [];
+  try {
+    const res = await tabsApi.query(queryInfo);
+    return Array.isArray(res) ? res : [];
+  } catch {
+    return [];
+  }
+}
+async function sendTabMessageSafe(tabsApi, tabId, payload, timeoutMs = 2e4) {
+  if (!tabsApi?.sendMessage || typeof tabId !== "number") return null;
+  let timer = null;
+  try {
+    const timeoutPromise = new Promise((resolve) => {
+      timer = setTimeout(() => resolve(null), timeoutMs);
+    });
+    const msgPromise = Promise.resolve(
+      tabsApi.sendMessage(tabId, { ns: MESSAGE_NS, ...payload })
+    ).catch(() => null);
+    return await Promise.race([msgPromise, timeoutPromise]);
+  } catch {
+    return null;
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+async function createTabSafe(tabsApi, createProps) {
+  if (!tabsApi?.create) return null;
+  try {
+    return await tabsApi.create(createProps) || null;
+  } catch {
+    return null;
+  }
+}
 function createRuntimeDispatcher({
   storageArea,
   fetchImpl = globalThis.fetch,
-  permissionsApi = globalThis.chrome?.permissions
+  permissionsApi = globalThis.chrome?.permissions,
+  tabsApi = globalThis.chrome?.tabs
 } = {}) {
-  return async function dispatch(message) {
+  const knownTabs = /* @__PURE__ */ new Map();
+  let batchRunnerTabId = null;
+  function rememberTab(tabId, extra = {}) {
+    if (typeof tabId !== "number") return;
+    const prev = knownTabs.get(tabId) || {};
+    knownTabs.set(tabId, {
+      url: extra.url || prev.url || "",
+      slug: extra.slug !== void 0 ? extra.slug : prev.slug || null,
+      seenAt: Date.now()
+    });
+  }
+  async function findCandidateTabIds({ preferActive = true } = {}) {
+    const orderedIds = [];
+    const pushUnique = (id) => {
+      if (typeof id === "number" && !orderedIds.includes(id)) {
+        orderedIds.push(id);
+      }
+    };
+    if (preferActive) {
+      const focused = await queryTabsSafe(tabsApi, {
+        active: true,
+        lastFocusedWindow: true
+      });
+      for (const t of focused) pushUnique(t.id);
+      const active = await queryTabsSafe(tabsApi, { active: true });
+      for (const t of active) pushUnique(t.id);
+    }
+    const sortedKnown = [...knownTabs.entries()].sort((a, b) => b[1].seenAt - a[1].seenAt).map(([id]) => id);
+    for (const id of sortedKnown) pushUnique(id);
+    const allTabs = await queryTabsSafe(tabsApi, {});
+    for (const t of allTabs) pushUnique(t.id);
+    return orderedIds;
+  }
+  async function findLivePerplexityTab({ requireOpenThread = false } = {}) {
+    const ids = await findCandidateTabIds({ preferActive: true });
+    let firstAlive = null;
+    for (const tabId of ids) {
+      const pong = await sendTabMessageSafe(
+        tabsApi,
+        tabId,
+        { type: RUNTIME_MESSAGES.PING_CONTENT },
+        900
+      );
+      if (!pong?.ok) {
+        knownTabs.delete(tabId);
+        continue;
+      }
+      rememberTab(tabId, { url: pong.url || "", slug: pong.slug || null });
+      const info = {
+        tabId,
+        url: pong.url || "",
+        slug: pong.slug || null,
+        isThreadOpen: Boolean(pong.isThreadOpen),
+        batchRunning: Boolean(pong.batchRunning)
+      };
+      if (!firstAlive) firstAlive = info;
+      if (!requireOpenThread || info.isThreadOpen) {
+        return info;
+      }
+    }
+    return firstAlive;
+  }
+  async function ensurePerplexityTabForBatch() {
+    const existing = await findLivePerplexityTab({ requireOpenThread: false });
+    if (existing) return existing;
+    const created = await createTabSafe(tabsApi, {
+      url: `${PERPLEXITY_CONFIG.origin}/`,
+      active: false
+    });
+    if (!created || typeof created.id !== "number") {
+      return null;
+    }
+    const deadline = Date.now() + 9e3;
+    while (Date.now() < deadline) {
+      const pong = await sendTabMessageSafe(
+        tabsApi,
+        created.id,
+        { type: RUNTIME_MESSAGES.PING_CONTENT },
+        750
+      );
+      if (pong?.ok) {
+        rememberTab(created.id, {
+          url: pong.url || `${PERPLEXITY_CONFIG.origin}/`,
+          slug: pong.slug || null
+        });
+        return {
+          tabId: created.id,
+          url: pong.url || `${PERPLEXITY_CONFIG.origin}/`,
+          slug: pong.slug || null,
+          isThreadOpen: Boolean(pong.isThreadOpen),
+          batchRunning: Boolean(pong.batchRunning)
+        };
+      }
+      await new Promise((r) => setTimeout(r, 320));
+    }
+    return null;
+  }
+  async function resolveFreshBatchStatus() {
+    const stored = await getBatchStatus(storageArea);
+    if (!stored || !stored.running) {
+      return stored;
+    }
+    if (typeof batchRunnerTabId === "number") {
+      const pong = await sendTabMessageSafe(
+        tabsApi,
+        batchRunnerTabId,
+        { type: RUNTIME_MESSAGES.PING_CONTENT },
+        750
+      );
+      if (!pong?.ok || !pong.batchRunning) {
+        const recheck = await getBatchStatus(storageArea);
+        if (recheck && !recheck.running) {
+          batchRunnerTabId = null;
+          return recheck;
+        }
+        batchRunnerTabId = null;
+        return setBatchStatus(
+          {
+            ...stored,
+            running: false,
+            state: "cancelled",
+            phase: "done",
+            message: "Batch stopped (Perplexity tab was closed or reloaded).",
+            finishedAt: Date.now()
+          },
+          storageArea
+        );
+      }
+    }
+    return stored;
+  }
+  return async function dispatch(message, sender) {
+    const senderTabId = sender?.tab?.id;
+    if (typeof senderTabId === "number") {
+      rememberTab(senderTabId, { url: sender?.tab?.url || "" });
+    }
     switch (message.type) {
+      case RUNTIME_MESSAGES.PING_CONTENT: {
+        rememberTab(senderTabId, {
+          url: message.url || "",
+          slug: message.slug || null
+        });
+        return { ok: true };
+      }
       case RUNTIME_MESSAGES.GET_STATE: {
-        const [settings, renamedIds] = await Promise.all([
+        const [settings, renamedIds, batchStatus] = await Promise.all([
           getSettings(storageArea),
-          getRenamedIds(storageArea)
+          getRenamedIds(storageArea),
+          resolveFreshBatchStatus()
         ]);
+        let activeThread = null;
+        if (typeof senderTabId !== "number" && tabsApi) {
+          const liveTab = await findLivePerplexityTab({
+            requireOpenThread: true
+          });
+          activeThread = liveTab ? {
+            hasPerplexityTab: true,
+            isThreadOpen: liveTab.isThreadOpen,
+            slug: liveTab.slug
+          } : {
+            hasPerplexityTab: false,
+            isThreadOpen: false,
+            slug: null
+          };
+        }
         return {
           ok: true,
           settings,
-          renamedIds
+          renamedIds,
+          batchStatus,
+          activeThread
         };
       }
       case RUNTIME_MESSAGES.GENERATE_TITLE: {
@@ -1055,6 +1494,8 @@ function createRuntimeDispatcher({
           apiKey,
           question: message.question || "",
           answer: message.answer || "",
+          avoidTitles: Array.isArray(message.avoidTitles) ? message.avoidTitles : [],
+          regenerate: Boolean(message.regenerate),
           fetchImpl
         });
         let enrichedError = result.error;
@@ -1149,6 +1590,120 @@ function createRuntimeDispatcher({
           };
         }
       }
+      case RUNTIME_MESSAGES.RENAME_CURRENT_CHAT: {
+        const targetTab = await findLivePerplexityTab({
+          requireOpenThread: true
+        });
+        if (!targetTab) {
+          return {
+            ok: false,
+            error: "Open a Perplexity chat tab (https://www.perplexity.ai/search/...) first."
+          };
+        }
+        if (!targetTab.isThreadOpen) {
+          return {
+            ok: false,
+            error: "Active Perplexity tab is on Home/Library — open a specific chat (/search/...) to rename or regenerate its title."
+          };
+        }
+        const res = await sendTabMessageSafe(
+          tabsApi,
+          targetTab.tabId,
+          {
+            type: RUNTIME_MESSAGES.RENAME_CURRENT_CHAT,
+            regenerate: Boolean(message.regenerate)
+          },
+          25e3
+        );
+        return res || {
+          ok: false,
+          error: "Could not reach Perplexity tab — reload perplexity.ai once and try again."
+        };
+      }
+      case RUNTIME_MESSAGES.START_BATCH_RENAME: {
+        const currentBatch = await resolveFreshBatchStatus();
+        if (currentBatch?.running) {
+          return {
+            ok: false,
+            error: "A batch library rename is already running."
+          };
+        }
+        const targetTab = await ensurePerplexityTabForBatch();
+        if (!targetTab) {
+          return {
+            ok: false,
+            error: "Open https://www.perplexity.ai/ (signed in) in a tab first, then click Run Batch."
+          };
+        }
+        batchRunnerTabId = targetTab.tabId;
+        const res = await sendTabMessageSafe(
+          tabsApi,
+          targetTab.tabId,
+          {
+            type: RUNTIME_MESSAGES.START_BATCH_RENAME,
+            spec: message.spec || {}
+          },
+          1e4
+        );
+        if (!res?.ok) {
+          batchRunnerTabId = null;
+          return {
+            ok: false,
+            error: res?.error || "Could not start batch rename in Perplexity tab — reload perplexity.ai and retry."
+          };
+        }
+        return { ok: true, started: true, tabId: targetTab.tabId };
+      }
+      case RUNTIME_MESSAGES.CANCEL_BATCH_RENAME: {
+        const candidateIds = await findCandidateTabIds({ preferActive: false });
+        if (typeof batchRunnerTabId === "number" && !candidateIds.includes(batchRunnerTabId)) {
+          candidateIds.unshift(batchRunnerTabId);
+        }
+        let anyStopped = false;
+        for (const id of candidateIds) {
+          const res = await sendTabMessageSafe(
+            tabsApi,
+            id,
+            { type: RUNTIME_MESSAGES.CANCEL_BATCH_RENAME },
+            2500
+          );
+          if (res?.stopped) anyStopped = true;
+        }
+        if (!anyStopped) {
+          const stored = await getBatchStatus(storageArea);
+          if (stored?.running) {
+            await setBatchStatus(
+              {
+                ...stored,
+                running: false,
+                state: "cancelled",
+                phase: "done",
+                message: "Batch library rename stopped.",
+                finishedAt: Date.now()
+              },
+              storageArea
+            );
+          }
+        }
+        batchRunnerTabId = null;
+        return { ok: true, stopped: true };
+      }
+      case RUNTIME_MESSAGES.GET_BATCH_STATUS: {
+        const batchStatus = await resolveFreshBatchStatus();
+        return { ok: true, batchStatus };
+      }
+      case RUNTIME_MESSAGES.UPDATE_BATCH_STATUS: {
+        const patch = message.status || {};
+        if (typeof senderTabId === "number") {
+          if (patch.running) {
+            batchRunnerTabId = senderTabId;
+          } else if (batchRunnerTabId === senderTabId) {
+            batchRunnerTabId = null;
+          }
+        }
+        const saved = await setBatchStatus(patch, storageArea);
+        return { ok: true, batchStatus: saved };
+      }
       default:
         return {
           ok: false,
@@ -1167,7 +1722,7 @@ if (typeof chrome !== "undefined" && chrome.runtime?.onMessage) {
     if (typeof sender?.tab?.id === "number") {
       activeTabIds.add(sender.tab.id);
     }
-    dispatch(message).then((res) => sendResponse(res)).catch(
+    dispatch(message, sender).then((res) => sendResponse(res)).catch(
       (err) => sendResponse({
         ok: false,
         error: err?.message || "Internal service worker error"

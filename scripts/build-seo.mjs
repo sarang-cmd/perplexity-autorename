@@ -25,11 +25,11 @@ const SOFTWARE_LD = {
   applicationCategory: "BrowserApplication",
   applicationSubCategory: "ProductivityExtension",
   operatingSystem: "Chrome, Brave, Arc, Microsoft Edge, Vivaldi, Opera (Chromium Manifest V3)",
-  softwareVersion: "0.1.0",
+  softwareVersion: "0.2.0",
   isAccessibleForFree: true,
   license: "https://opensource.org/licenses/MIT",
   url: `${SITE_URL}/`,
-  downloadUrl: `${SITE_URL}/releases/auto-rename-for-perplexity-v0.1.0.zip`,
+  downloadUrl: `${SITE_URL}/releases/auto-rename-for-perplexity-v0.2.0.zip`,
   installUrl: DOWNLOAD_URL,
   codeRepository: REPO_URL,
   screenshot: [
@@ -39,6 +39,8 @@ const SOFTWARE_LD = {
   ],
   featureList: [
     "Automatically renames new Perplexity.ai threads to crisp 3-7 word titles after the first answer streams",
+    "On-demand Rename & ↻ Regenerate Title for the currently open Perplexity chat (from toolbar popup, settings, or inline toast button)",
+    "Retroactive Batch Library Renamer: rename Past 50 / 20 Chats, Last 20 / 30 Days of Library, Custom N, or All Library Chats with live progress and instant Stop",
     "Supports 10 LLM providers (Groq, OpenRouter, Gemini, OpenAI, Anthropic, Mistral, DeepSeek, Sarvam, OpenCode Zen, Ollama)",
     "100% offline zero-key heuristic fallback title generator",
     "Optional custom title prefixes (e.g. [Research], [Bug]) and regex exclude patterns",
@@ -76,7 +78,7 @@ export const GUIDES = [
     howToSteps: [
       {
         name: "Download Auto-Rename for Perplexity (.zip)",
-        text: "Download auto-rename-for-perplexity-v0.1.0.zip from perplexity-autorename.vercel.app and extract the folder on your computer.",
+        text: "Download auto-rename-for-perplexity-v0.2.0.zip from perplexity-autorename.vercel.app and extract the folder on your computer.",
       },
       {
         name: "Load unpacked in your Chromium browser",
@@ -172,7 +174,7 @@ export const GUIDES = [
           Auto-Rename for Perplexity is 100% free and open source on <a href="${REPO_URL}" target="_blank" rel="noopener">GitHub (<code>sarang-cmd/perplexity-autorename</code>)</a>. While Chrome Web Store publication is pending, you can load the prebuilt unpacked release in under a minute on Chrome, Brave, Arc, Edge, or Vivaldi:
         </p>
         <ol>
-          <li>Click <strong>⬇ Download Extension .zip</strong> on this page to save <code>auto-rename-for-perplexity-v0.1.0.zip</code>, then unzip it.</li>
+          <li>Click <strong>⬇ Download Extension .zip</strong> on this page to save <code>auto-rename-for-perplexity-v0.2.0.zip</code>, then unzip it.</li>
           <li>Navigate to <code>chrome://extensions</code> (or <code>brave://extensions</code> / <code>arc://extensions</code> / <code>edge://extensions</code>) and toggle <strong>Developer mode</strong> on.</li>
           <li>Click <strong>Load unpacked</strong> and select the unzipped folder.</li>
           <li>Optional: click the pixel <code>P_</code> icon in your toolbar to add a free <a href="../free-groq-ollama-setup/">Groq, Gemini, OpenRouter, or local Ollama</a> configuration—or leave the API key blank to use instant offline mode.</li>
@@ -293,8 +295,8 @@ export const GUIDES = [
         a: "Auto-Rename compiles each regex safely inside a guard and ignores malformed expressions without crashing or blocking valid patterns.",
       },
       {
-        q: "Does Auto-Rename touch old threads in my Perplexity Library?",
-        a: "No. It only names new threads at the moment their first answer finishes streaming, so your existing archived threads and manually curated titles are never modified.",
+        q: "Can I batch-rename old threads already in my Perplexity Library?",
+        a: "Yes! Automatic mode only names brand-new threads so old threads are never touched unexpectedly, AND v0.2.0+ includes a dedicated Batch Library Renamer in both the toolbar popup and Settings page—letting you retroactively rename the Past 50 / 20 Chats, the Last 20 / 30 Days of your Library, or All Library Chats while skipping already-renamed and manually edited titles.",
       },
     ],
   },
@@ -311,12 +313,12 @@ export const GUIDES = [
     lead:
       "Auto-Rename for Perplexity is distributed directly as an open-source, prebuilt Manifest V3 release ZIP while Chrome Web Store registration is on hold. Loading it unpacked takes under 60 seconds in any Chromium browser.",
     quickAnswer:
-      'To install <strong>Auto-Rename for Perplexity</strong> without the Chrome Web Store, download <code>auto-rename-for-perplexity-v0.1.0.zip</code> from <a href="https://perplexity-autorename.vercel.app">perplexity-autorename.vercel.app</a>, extract the ZIP to a permanent folder, open <code>chrome://extensions</code> (or <code>brave://extensions</code>, <code>arc://extensions</code>, <code>edge://extensions</code>), turn on <strong>Developer mode</strong>, click <strong>Load unpacked</strong>, and select the extracted folder containing <code>manifest.json</code>.',
+      'To install <strong>Auto-Rename for Perplexity</strong> without the Chrome Web Store, download <code>auto-rename-for-perplexity-v0.2.0.zip</code> from <a href="https://perplexity-autorename.vercel.app">perplexity-autorename.vercel.app</a>, extract the ZIP to a permanent folder, open <code>chrome://extensions</code> (or <code>brave://extensions</code>, <code>arc://extensions</code>, <code>edge://extensions</code>), turn on <strong>Developer mode</strong>, click <strong>Load unpacked</strong>, and select the extracted folder containing <code>manifest.json</code>.',
     schemaType: "HowTo",
     howToSteps: [
       {
         name: "Download and unzip the release archive",
-        text: "Click Download .ZIP on perplexity-autorename.vercel.app to get auto-rename-for-perplexity-v0.1.0.zip, then extract it to a permanent folder such as ~/Extensions/perplexity-autorename.",
+        text: "Click Download .ZIP on perplexity-autorename.vercel.app to get auto-rename-for-perplexity-v0.2.0.zip, then extract it to a permanent folder such as ~/Extensions/perplexity-autorename.",
       },
       {
         name: "Open your browser's Extensions management page",
@@ -904,7 +906,7 @@ function buildHeader(assetPrefix) {
           <a
             href="${assetPrefix}index.html#install"
             data-download-release
-            download="auto-rename-for-perplexity-v0.1.0.zip"
+            download="auto-rename-for-perplexity-v0.2.0.zip"
             class="btn primary sm"
           >
             ⬇ DOWNLOAD .ZIP
@@ -938,7 +940,7 @@ function buildFooter(assetPrefix) {
             <a
               href="${assetPrefix}index.html#install"
               data-download-release
-              download="auto-rename-for-perplexity-v0.1.0.zip"
+              download="auto-rename-for-perplexity-v0.2.0.zip"
               >DOWNLOAD V0.1.0</a
             >
             <a href="${assetPrefix}guides/">ALL GUIDES</a>
@@ -1091,7 +1093,7 @@ ${buildHeader("../")}
             <a
               href="../index.html#install"
               data-download-release
-              download="auto-rename-for-perplexity-v0.1.0.zip"
+              download="auto-rename-for-perplexity-v0.2.0.zip"
               class="btn primary"
             >
               ⬇ DOWNLOAD EXTENSION .ZIP (FREE)
@@ -1132,7 +1134,7 @@ ${faqHtml}
               <a
                 href="../index.html#install"
                 data-download-release
-                download="auto-rename-for-perplexity-v0.1.0.zip"
+                download="auto-rename-for-perplexity-v0.2.0.zip"
                 class="btn primary"
                 style="width: 100%; justify-content: center; margin-bottom: 10px"
               >
@@ -1386,7 +1388,7 @@ function buildLlmsTxt() {
 > Free, MIT-licensed Chrome/Chromium Manifest V3 extension that fixes messy or cut-off Perplexity.ai thread titles by automatically renaming every new thread to a crisp 3–7 word topic summary once the first answer finishes streaming. Works immediately via 60-second unpacked install on Chrome, Brave, Arc, Edge, and Vivaldi (no Chrome Web Store listing required), with 10 LLM providers plus a 100% offline zero-key fallback.
 
 - Website & Live Simulator: ${SITE_URL}/
-- Direct Extension ZIP Download (v0.1.0): ${DOWNLOAD_URL}
+- Direct Extension ZIP Download (v0.2.0): ${DOWNLOAD_URL}
 - GitHub Repository (MIT Open Source): ${REPO_URL}
 - Complete LLM Technical Reference: ${SITE_URL}/llms-full.txt
 - Privacy Policy: ${SITE_URL}/privacy-policy.html
@@ -1418,7 +1420,7 @@ ${g.faqs.map((f) => `Q: ${f.q}\nA: ${f.a}`).join("\n\n")}`
 ---
 
 ## Quick Unpacked Installation (No Chrome Web Store Needed)
-1. Download \`auto-rename-for-perplexity-v0.1.0.zip\` from ${DOWNLOAD_URL} and extract it to a permanent folder.
+1. Download \`auto-rename-for-perplexity-v0.2.0.zip\` from ${DOWNLOAD_URL} and extract it to a permanent folder.
 2. Open \`chrome://extensions\` (or \`brave://extensions\`, \`arc://extensions\`, \`edge://extensions\`) and enable **Developer mode**.
 3. Click **Load unpacked** and select the extracted directory containing \`manifest.json\`.
 4. Refresh any open \`perplexity.ai\` tab and ask a new question. Works out of the box with zero API key (offline heuristic) or with Groq, Gemini, OpenRouter, OpenAI, Anthropic, Mistral, DeepSeek, Sarvam, OpenCode Zen, or local Ollama (\`http://127.0.0.1:11434\`).
@@ -1470,7 +1472,7 @@ function upgradeRootIndexHtml(html) {
           "@type": "HowToStep",
           position: 1,
           name: "Download Extension ZIP",
-          text: "Download auto-rename-for-perplexity-v0.1.0.zip from perplexity-autorename.vercel.app and unzip it.",
+          text: "Download auto-rename-for-perplexity-v0.2.0.zip from perplexity-autorename.vercel.app and unzip it.",
         },
         {
           "@type": "HowToStep",

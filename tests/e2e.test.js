@@ -5,7 +5,14 @@ import { join } from "node:path";
 import { installPageScript } from "../src/page/inject.js";
 import { initContentScript } from "../src/content/content.js";
 import { createRuntimeDispatcher } from "../src/background/service-worker.js";
-import { setApiKey, saveSettings, getHistory, getLastStatus } from "../src/lib/storage.js";
+import {
+  setApiKey,
+  saveSettings,
+  getHistory,
+  getLastStatus,
+  getBatchStatus,
+  recordRenameEntry,
+} from "../src/lib/storage.js";
 
 function createMemoryStorage() {
   const data = {};
@@ -487,6 +494,252 @@ describe("e2e: page-world wrapper + content script + service worker pipeline", (
     assert.equal(failRes.ok, false);
     assert.match(failRes.error, /Host permission not granted for https:\/\/api\.groq\.com\/\*/);
   });
+
+  it("renames the currently open chat on demand and regenerates a fresh non-repeating title", async () => {
+    const renamePayloads = [];
+    const llmPrompts = [];
+    let detailCalls = 0;
+
+    const env = createMockEnvironment({
+      onPerplexityFetch: async (input, init) => {
+        const url = typeof input === "string" ? input : input.url;
+        if (url.includes("/api/auth/session")) {
+          return new Response(JSON.stringify({ user: { id: "u-open-1" } }), { status: 200 });
+        }
+        if (url.includes("/rest/thread/open-chat-slug-42")) {
+          detailCalls++;
+          return new Response(
+            JSON.stringify({
+              read_write_token: "rwt-open-42",
+              entries: [
+                {
+                  context_uuid: "ctx-open-42",
+                  backend_uuid: "open-chat-slug-42",
+                  thread_title: "how do sqlite wal checkpoints work",
+                  query_str: "How do SQLite WAL checkpoints work under heavy read concurrency?",
+                  blocks: [
+                    {
+                      intended_usage: "ask_text",
+                      markdown_block: {
+                        answer:
+                          "SQLite WAL appends pages to a write-ahead log and checkpoints frames back into the main database file once readers advance past the snapshot.",
+                      },
+                    },
+                  ],
+                },
+              ],
+            }),
+            { status: 200 }
+          );
+        }
+        if (url.includes("/rest/thread/set_thread_title")) {
+          renamePayloads.push(JSON.parse(init.body));
+          return new Response(null, { status: 204 });
+        }
+        throw new Error(`Unexpected URL: ${url}`);
+      },
+      onLlmFetch: async (_url, init) => {
+        const body = JSON.parse(init.body);
+        llmPrompts.push(body);
+        const isRegen = llmPrompts.length > 1;
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            choices: [
+              {
+                message: {
+                  content: isRegen
+                    ? "Concurrent Reader WAL Checkpoint Mechanics"
+                    : "SQLite WAL Checkpoint Concurrency",
+                },
+              },
+            ],
+          }),
+        };
+      },
+    });
+
+    env.mockWindow.location.pathname = "/search/open-chat-slug-42";
+    env.mockWindow.location.href = "https://www.perplexity.ai/search/open-chat-slug-42";
+
+    await setApiKey("groq", "gsk_open_test", env.storageArea);
+    installPageScript(env.mockWindow);
+    const controller = initContentScript({
+      win: env.mockWindow,
+      chromeObj: env.mockChrome,
+      retryDelaysMs: [5, 5],
+    });
+
+    const firstRes = await controller.renameCurrentChat({ regenerate: false });
+    assert.equal(firstRes.ok, true);
+    assert.equal(firstRes.title, "SQLite WAL Checkpoint Concurrency");
+    assert.equal(detailCalls, 1);
+    assert.equal(env.mockWindow.document.title, "SQLite WAL Checkpoint Concurrency");
+
+    // Second call: regenerate=true reuses cached thread snapshot and passes previous titles to avoid
+    const regenRes = await controller.renameCurrentChat({ regenerate: true });
+    assert.equal(regenRes.ok, true);
+    assert.equal(regenRes.title, "Concurrent Reader WAL Checkpoint Mechanics");
+    assert.equal(detailCalls, 1);
+    assert.equal(renamePayloads.length, 2);
+    assert.equal(llmPrompts[1].temperature, 0.65);
+    assert.match(
+      llmPrompts[1].messages[1].content,
+      /SQLite WAL Checkpoint Concurrency/
+    );
+    assert.equal(
+      env.mockWindow.document.title,
+      "Concurrent Reader WAL Checkpoint Mechanics"
+    );
+  });
+
+  it("batch-renames library history for Last 20 Days while skipping already-renamed chats and preserving open tab title", async () => {
+    const renameBodies = [];
+    const nowIsoRecent1 = new Date(Date.now() - 2 * 86_400_000)
+      .toISOString()
+      .replace("Z", "");
+    const nowIsoRecent2 = new Date(Date.now() - 10 * 86_400_000)
+      .toISOString()
+      .replace("Z", "");
+    const nowIsoOld = new Date(Date.now() - 45 * 86_400_000)
+      .toISOString()
+      .replace("Z", "");
+
+    // Pre-mark ctx-lib-already as already renamed
+    await recordRenameEntry(
+      {
+        contextUuid: "ctx-lib-already",
+        backendUuid: "slug-already",
+        title: "Already Renamed Thread",
+        source: "llm",
+        provider: "groq",
+      },
+      undefined
+    ).catch(() => {});
+
+    const env = createMockEnvironment({
+      onPerplexityFetch: async (input, init) => {
+        const url = typeof input === "string" ? input : input.url;
+        if (url.includes("/api/auth/session")) {
+          return new Response(JSON.stringify({ user: { id: "u-batch-1" } }), { status: 200 });
+        }
+        if (url.includes("list_pinned_ask_threads")) {
+          return new Response("[]", { status: 200 });
+        }
+        if (url.includes("list_ask_threads")) {
+          return new Response(
+            JSON.stringify([
+              {
+                context_uuid: "ctx-lib-1",
+                slug: "slug-lib-1",
+                title: "first raw thread",
+                last_query_datetime: nowIsoRecent1,
+                status: "COMPLETED",
+                has_next_page: true,
+              },
+              {
+                context_uuid: "ctx-lib-already",
+                slug: "slug-already",
+                title: "Already Renamed Thread",
+                last_query_datetime: nowIsoRecent2,
+                status: "COMPLETED",
+                has_next_page: true,
+              },
+              {
+                context_uuid: "ctx-lib-old",
+                slug: "slug-old",
+                title: "45 days old thread",
+                last_query_datetime: nowIsoOld,
+                status: "COMPLETED",
+                has_next_page: false,
+              },
+            ]),
+            { status: 200 }
+          );
+        }
+        if (url.includes("/rest/thread/slug-lib-1")) {
+          return new Response(
+            JSON.stringify({
+              read_write_token: "rwt-lib-1",
+              entries: [
+                {
+                  context_uuid: "ctx-lib-1",
+                  query_str: "How does HTTP/3 QUIC eliminate TCP head-of-line blocking?",
+                  blocks: [
+                    {
+                      intended_usage: "ask_text",
+                      markdown_block: {
+                        answer: "QUIC multiplexes independent streams over UDP so a lost packet only stalls its own stream.",
+                      },
+                    },
+                  ],
+                },
+              ],
+            }),
+            { status: 200 }
+          );
+        }
+        if (url.includes("/rest/thread/set_thread_title")) {
+          renameBodies.push(JSON.parse(init.body));
+          return new Response(null, { status: 204 });
+        }
+        throw new Error(`Unexpected batch URL: ${url}`);
+      },
+      onLlmFetch: async () => ({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          choices: [{ message: { content: "QUIC Stream Multiplexing Over UDP" } }],
+        }),
+      }),
+    });
+
+    await recordRenameEntry(
+      {
+        contextUuid: "ctx-lib-already",
+        backendUuid: "slug-already",
+        title: "Already Renamed Thread",
+        source: "llm",
+        provider: "groq",
+      },
+      env.storageArea
+    );
+    await setApiKey("groq", "gsk_batch_key", env.storageArea);
+
+    env.mockWindow.document.title = "Keep Current Tab Title Untouched";
+    installPageScript(env.mockWindow);
+    const controller = initContentScript({
+      win: env.mockWindow,
+      chromeObj: env.mockChrome,
+      retryDelaysMs: [5, 5],
+      batchPageDelayMs: 0,
+      batchStepDelayMs: 0,
+    });
+
+    const summary = await controller.runBatchRename({
+      mode: "days",
+      days: 20,
+      skipAlreadyRenamed: true,
+    });
+
+    assert.equal(summary.ok, true);
+    assert.equal(summary.renamed, 1);
+    assert.equal(summary.skipped, 1);
+    assert.equal(renameBodies.length, 1);
+    assert.deepEqual(renameBodies[0], {
+      context_uuid: "ctx-lib-1",
+      title: "QUIC Stream Multiplexing Over UDP",
+      read_write_token: "rwt-lib-1",
+    });
+    // Batch renames must NOT clobber the open tab's document.title
+    assert.equal(env.mockWindow.document.title, "Keep Current Tab Title Untouched");
+
+    const storedBatch = await getBatchStatus(env.storageArea);
+    assert.equal(storedBatch.running, false);
+    assert.equal(storedBatch.state, "completed");
+    assert.equal(storedBatch.renamed, 1);
+  });
 });
 
 describe("security & architecture invariants", () => {
@@ -516,6 +769,7 @@ describe("security & architecture invariants", () => {
       "src/content/toast.js",
       "src/background/service-worker.js",
       "src/lib/sse.js",
+      "src/lib/library.js",
       "src/lib/perplexity-api.js",
       "src/options/options.js",
       "src/popup/popup.js",
@@ -528,7 +782,10 @@ describe("security & architecture invariants", () => {
       assert.ok(
         !codeOnly.includes("perplexity_ask") &&
           !codeOnly.includes("set_thread_title") &&
-          !codeOnly.includes("/api/auth/session"),
+          !codeOnly.includes("/api/auth/session") &&
+          !codeOnly.includes("list_ask_threads") &&
+          !codeOnly.includes("list_pinned_ask_threads") &&
+          !codeOnly.includes("/rest/thread/"),
         `Hardcoded Perplexity endpoint found in ${rel}`
       );
     }

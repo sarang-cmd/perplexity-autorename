@@ -34,6 +34,8 @@ export async function callAnthropic({
   apiKey,
   question,
   answer,
+  avoidTitles = [],
+  regenerate = false,
   fetchImpl = fetch,
   signal,
 }) {
@@ -59,15 +61,17 @@ export async function callAnthropic({
     headers["x-api-key"] = trimmedKey;
   }
 
+  const temp = regenerate || (Array.isArray(avoidTitles) && avoidTitles.length > 0) ? 0.65 : 0.2;
+
   const body = {
     model: cleanModel,
     max_tokens: MAX_OUTPUT_TOKENS,
-    temperature: 0.2,
+    temperature: temp,
     system: SYSTEM_PROMPT,
     messages: [
       {
         role: "user",
-        content: buildUserPrompt(question, answer),
+        content: buildUserPrompt(question, answer, { avoidTitles }),
       },
     ],
   };

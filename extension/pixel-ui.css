@@ -247,6 +247,7 @@ label {
 input[type="text"],
 input[type="password"],
 input[type="url"],
+input[type="number"],
 select,
 textarea {
   width: 100%;
@@ -262,8 +263,12 @@ textarea {
 
 #popup-model,
 #model,
+#model-input,
+#opt-batch-number,
 #custom-base-url,
-#exclude-patterns {
+#custom-url-input,
+#exclude-patterns,
+#exclude-textarea {
   font-family: "PPX Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 12.5px;
 }
@@ -380,6 +385,8 @@ textarea {
   background: var(--card-subtle);
   color: var(--muted);
   line-height: 1.2;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .badge.ok {
@@ -557,4 +564,156 @@ body.options-page {
   .grid-2 {
     grid-template-columns: 1fr;
   }
+}
+
+/* On-Demand Open Chat & Batch Library Renamer HUD */
+button.danger {
+  background: var(--err-bg);
+  border-color: var(--err-border);
+  color: var(--err-text);
+}
+
+button.danger:hover {
+  background: var(--err-border);
+  color: #091318;
+}
+
+.action-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.batch-inline-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.batch-inline-row select {
+  flex: 1;
+  min-width: 0;
+}
+
+.batch-custom-input {
+  width: 82px !important;
+  flex-shrink: 0;
+  font-family: "PPX Mono", monospace !important;
+  text-align: center;
+}
+
+.mini-check-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: "PPX Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--muted);
+  cursor: pointer;
+  user-select: none;
+  margin: 0;
+}
+
+.mini-check-row input[type="checkbox"] {
+  accent-color: var(--accent);
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  cursor: pointer;
+}
+
+.preset-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+button.preset-chip {
+  padding: 6px 10px;
+  font-size: 9.5px;
+  background: var(--card-subtle);
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: 2px 2px 0 var(--shadow);
+}
+
+button.preset-chip:hover {
+  border-color: var(--accent);
+  color: var(--accent-light);
+}
+
+button.preset-chip.active {
+  background: var(--ok-bg);
+  border-color: var(--accent);
+  color: var(--accent-light);
+}
+
+.batch-progress-box {
+  margin-top: 9px;
+  padding: 9px 11px;
+  background: var(--card-subtle);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.batch-progress-box.running {
+  border-color: var(--accent);
+}
+
+.batch-progress-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.batch-progress-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.batch-progress-pct {
+  font-family: "PPX Mono", monospace;
+  font-size: 11px;
+  color: var(--accent-light);
+  flex-shrink: 0;
+}
+
+.pixel-progress-track {
+  width: 100%;
+  height: 10px;
+  background: #071015;
+  border: 1px solid var(--border);
+  padding: 1px;
+}
+
+.pixel-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--accent) 0px,
+    var(--accent) 7px,
+    #115e59 7px,
+    #115e59 9px
+  );
+  transition: width 150ms steps(8, end);
+}
+
+.batch-stats-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11.5px;
+  color: var(--muted);
 }

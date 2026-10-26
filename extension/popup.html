@@ -35,6 +35,78 @@
         </div>
       </div>
 
+      <!-- Current Open Chat + Batch Library Actions -->
+      <section class="card" aria-label="Chat & Library Actions">
+        <div class="status-row" style="margin-bottom: 8px">
+          <h2 style="margin: 0">Chat &amp; Library Actions</h2>
+          <span id="popup-open-chat-badge" class="badge">READY</span>
+        </div>
+
+        <div class="action-pair" style="margin-bottom: 10px">
+          <button id="popup-rename-current-btn" type="button" class="primary" style="padding: 7px 10px; font-size: 9.5px">
+            Rename Chat
+          </button>
+          <button id="popup-regen-current-btn" type="button" style="padding: 7px 10px; font-size: 9.5px">
+            ↻ Regenerate
+          </button>
+        </div>
+
+        <div id="popup-current-feedback" class="feedback" role="status" style="margin-bottom: 8px"></div>
+
+        <div class="field" style="margin-bottom: 8px">
+          <label for="popup-batch-preset">Batch Rename Library</label>
+          <div class="batch-inline-row">
+            <select id="popup-batch-preset">
+              <option value="count:50">Past 50 Chats</option>
+              <option value="days:20">Last 20 Days of Library</option>
+              <option value="days:30">Last 30 Days of Library</option>
+              <option value="count:20">Past 20 Chats</option>
+              <option value="days:7">Last 7 Days of Library</option>
+              <option value="all">Rename All Library Chats</option>
+              <option value="custom-count">Custom Chat Count…</option>
+              <option value="custom-days">Custom Day Range…</option>
+            </select>
+            <input
+              id="popup-batch-custom"
+              type="number"
+              class="batch-custom-input hidden"
+              min="1"
+              max="5000"
+              value="100"
+              aria-label="Custom batch number"
+            />
+          </div>
+        </div>
+
+        <div class="status-row">
+          <label class="mini-check-row" for="popup-skip-renamed">
+            <input id="popup-skip-renamed" type="checkbox" checked />
+            <span>Skip already-renamed</span>
+          </label>
+          <div style="display: flex; gap: 6px">
+            <button id="popup-start-batch-btn" type="button" class="primary" style="padding: 6px 11px; font-size: 9.5px">
+              Run Batch
+            </button>
+            <button id="popup-stop-batch-btn" type="button" class="danger hidden" style="padding: 6px 11px; font-size: 9.5px">
+              ■ Stop
+            </button>
+          </div>
+        </div>
+
+        <div id="popup-batch-progress" class="batch-progress-box hidden">
+          <div class="batch-progress-top">
+            <span id="popup-batch-label" class="batch-progress-label">Scanning library…</span>
+            <span id="popup-batch-pct" class="batch-progress-pct">0%</span>
+          </div>
+          <div class="pixel-progress-track">
+            <div id="popup-batch-fill" class="pixel-progress-fill"></div>
+          </div>
+          <div class="batch-stats-row">
+            <span id="popup-batch-stats">0 renamed · 0 skipped</span>
+          </div>
+        </div>
+      </section>
+
       <!-- Quick Provider & Key Configuration -->
       <section class="card" aria-label="Provider & Key">
         <h2>Provider &amp; Key</h2>

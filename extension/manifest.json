@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Auto-Rename for Perplexity",
-  "version": "0.1.0",
-  "description": "Automatically renames new Perplexity threads to a concise 3–7 word title once the first answer completes.",
+  "version": "0.2.0",
+  "description": "Auto-renames new Perplexity threads, regenerates open chat titles, and batch-renames library history into 3–7 word titles.",
   "icons": {
     "16": "icons/icon16.png",
     "32": "icons/icon32.png",

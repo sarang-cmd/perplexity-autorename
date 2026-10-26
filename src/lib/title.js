@@ -253,7 +253,7 @@ function formatHeuristicWord(word, index) {
   return lower.charAt(0).toUpperCase() + lower.slice(1);
 }
 
-function extractCandidateWords(source) {
+function extractCandidateWords(source, maxTokens = 7) {
   if (typeof source !== "string" || !source.trim()) {
     return [];
   }
@@ -277,42 +277,89 @@ function extractCandidateWords(source) {
     if (seenLower.has(norm)) continue;
     seenLower.add(norm);
     selected.push(token);
-    if (selected.length >= 7) break;
+    if (selected.length >= maxTokens) break;
   }
 
   return selected;
 }
 
+function buildFormattedSlice(words) {
+  const formatted = words
+    .slice(0, 7)
+    .map((w, idx) => formatHeuristicWord(w, idx))
+    .join(" ");
+  return sanitizeTitle(formatted, { maxWords: 7 });
+}
+
 /**
  * Generates a deterministic 3–7 word title from the question (and optionally answer)
  * when no LLM key is configured or the provider request fails.
+ * Supports `avoidTitles` so regenerating in offline mode produces a fresh variation.
  *
  * @param {string} question
  * @param {string} [answer]
+ * @param {{ avoidTitles?: string[] }} [options]
  * @returns {string}
  */
-export function heuristicTitle(question, answer = "") {
-  const qWords = extractCandidateWords(question);
+export function heuristicTitle(question, answer = "", { avoidTitles = [] } = {}) {
+  const avoidLower = new Set(
+    Array.isArray(avoidTitles)
+      ? avoidTitles
+          .filter((t) => typeof t === "string" && t.trim())
+          .map((t) => t.trim().toLowerCase())
+      : []
+  );
 
-  if (qWords.length < 3 && typeof answer === "string" && answer.trim()) {
-    // Supplement from the opening sentence of the answer if the question was ultra-terse
-    const firstSentence = answer.split(/(?<=[.!?])\s+/)[0] || answer.slice(0, 240);
-    const aWords = extractCandidateWords(firstSentence);
-    const existing = new Set(qWords.map((w) => w.toLowerCase()));
-    for (const w of aWords) {
-      if (!existing.has(w.toLowerCase())) {
-        qWords.push(w);
-        existing.add(w.toLowerCase());
-      }
-      if (qWords.length >= 5) break;
+  const qWords = extractCandidateWords(question, 12);
+  const aWords =
+    typeof answer === "string" && answer.trim()
+      ? extractCandidateWords(answer.slice(0, 600), 12)
+      : [];
+
+  const merged = [...qWords];
+  const existing = new Set(merged.map((w) => w.toLowerCase()));
+  for (const w of aWords) {
+    if (!existing.has(w.toLowerCase())) {
+      merged.push(w);
+      existing.add(w.toLowerCase());
     }
   }
 
-  if (qWords.length >= 1) {
-    const target = qWords.slice(0, 7);
-    const formatted = target.map((w, idx) => formatHeuristicWord(w, idx)).join(" ");
-    const clean = sanitizeTitle(formatted, { maxWords: 7 });
-    if (clean) return clean;
+  if (merged.length >= 1) {
+    const primaryCount = qWords.length >= 3 ? Math.min(7, qWords.length) : Math.min(5, merged.length);
+    const primary = buildFormattedSlice(merged.slice(0, primaryCount));
+
+    if (primary && !avoidLower.has(primary.toLowerCase())) {
+      return primary;
+    }
+
+    // Regenerate variations when `avoidTitles` contains the primary heuristic
+    const variants = [];
+    if (aWords.length >= 2) {
+      const lead = qWords.slice(0, 2);
+      const leadSet = new Set(lead.map((w) => w.toLowerCase()));
+      const fromAns = aWords.filter((w) => !leadSet.has(w.toLowerCase())).slice(0, 4);
+      variants.push([...lead, ...fromAns]);
+      variants.push([...aWords.slice(0, 4), ...qWords.slice(0, 2)]);
+    }
+    if (merged.length > 3) {
+      variants.push(merged.slice(1, 7));
+      variants.push([...merged.slice(2, 6), merged[0]]);
+      variants.push([...merged.slice(0, 4), "Overview"]);
+      variants.push([...merged.slice(0, 4), "Guide"]);
+    } else if (primary) {
+      variants.push([...merged, "Overview"]);
+      variants.push([...merged, "Summary"]);
+    }
+
+    for (const v of variants) {
+      const candidate = buildFormattedSlice(v);
+      if (candidate && !avoidLower.has(candidate.toLowerCase())) {
+        return candidate;
+      }
+    }
+
+    if (primary) return primary;
   }
 
   // Last-resort fallback: first words of the raw question

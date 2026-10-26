@@ -463,7 +463,7 @@
   // --- Embedded Self-Contained Extension Release ZIP Download ---
   (function initReleaseDownload() {
     const b64 = window.PPX_RELEASE_ZIP_B64;
-    const filename = window.PPX_RELEASE_ZIP_NAME || "auto-rename-for-perplexity-v0.1.0.zip";
+    const filename = window.PPX_RELEASE_ZIP_NAME || "auto-rename-for-perplexity-v0.2.0.zip";
     if (!b64) return;
 
     let blobUrl = null;

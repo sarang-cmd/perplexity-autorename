@@ -18,7 +18,18 @@ import {
   PERPLEXITY_CONFIG,
 } from "../config/selectors.js";
 import { shouldRename } from "../lib/decide.js";
-import { fetchAccountId, postThreadRename } from "../lib/perplexity-api.js";
+import {
+  normalizeBatchSpec,
+  parseSlugFromUrl,
+  selectBatchCandidates,
+  shouldStopLibraryPagination,
+} from "../lib/library.js";
+import {
+  fetchAccountId,
+  fetchLibraryThreadsPage,
+  fetchThreadDetail,
+  postThreadRename,
+} from "../lib/perplexity-api.js";
 import { createRenameToaster } from "./toast.js";
 
 const { domMarkers } = PERPLEXITY_CONFIG;
@@ -107,6 +118,8 @@ export function requestSingleRename({
   contextUuid,
   readWriteToken,
   title,
+  slug = null,
+  batch = false,
   fetchImpl = globalThis.fetch,
   getCachedAccountId,
   setCachedAccountId,
@@ -205,6 +218,201 @@ export function requestSingleRename({
         contextUuid,
         readWriteToken,
         title,
+        slug,
+        batch,
+      },
+      targetOrigin
+    );
+  });
+}
+
+/**
+ * Fetches a thread's opening Q&A and IDs via the MAIN-world `page.js` bridge,
+ * falling back to direct `fetchThreadDetail` if the bridge times out.
+ */
+export function requestThreadDetail({
+  win,
+  slug,
+  fetchImpl = globalThis.fetch,
+  getCachedAccountId,
+  setCachedAccountId,
+  bridgeTimeoutMs = 10000,
+}) {
+  const origin =
+    win?.location?.origin && win.location.origin !== "null"
+      ? win.location.origin
+      : PERPLEXITY_CONFIG.origin;
+
+  const hasBridge = Boolean(
+    win &&
+      typeof win.postMessage === "function" &&
+      typeof win.addEventListener === "function" &&
+      (win.document?.documentElement?.getAttribute(domMarkers.pageInjectedAttr) ===
+        "1" ||
+        win[domMarkers.globalFlag])
+  );
+
+  const runDirect = async () => {
+    let accountId = getCachedAccountId();
+    if (accountId === undefined) {
+      accountId = await fetchAccountId(fetchImpl, origin);
+      setCachedAccountId(accountId);
+    }
+    return fetchThreadDetail({ slug, accountId, fetchImpl, origin });
+  };
+
+  if (!hasBridge) {
+    return runDirect();
+  }
+
+  return new Promise((resolve) => {
+    const requestId = makeRequestId();
+    let settled = false;
+
+    const cleanup = (timer) => {
+      clearTimeout(timer);
+      win.removeEventListener("message", onMessage);
+    };
+
+    const onMessage = (event) => {
+      if (event.source !== win) return;
+      const data = event.data;
+      if (
+        !data ||
+        data.ns !== MESSAGE_NS ||
+        data.type !== WINDOW_MESSAGES.THREAD_DETAIL_RESPONSE ||
+        data.requestId !== requestId
+      ) {
+        return;
+      }
+      if (settled) return;
+      settled = true;
+      cleanup(timer);
+      resolve(
+        data.result || { ok: false, status: 0, error: "Empty detail response" }
+      );
+    };
+
+    const timer = setTimeout(async () => {
+      if (settled) return;
+      settled = true;
+      win.removeEventListener("message", onMessage);
+      resolve(await runDirect());
+    }, bridgeTimeoutMs);
+
+    win.addEventListener("message", onMessage);
+    const targetOrigin =
+      origin !== PERPLEXITY_CONFIG.origin && win.location?.origin === "null"
+        ? "*"
+        : origin;
+    win.postMessage(
+      {
+        ns: MESSAGE_NS,
+        type: WINDOW_MESSAGES.THREAD_DETAIL_REQUEST,
+        requestId,
+        slug,
+      },
+      targetOrigin
+    );
+  });
+}
+
+/**
+ * Fetches one page of Perplexity Library threads via the MAIN-world `page.js` bridge,
+ * falling back to direct `fetchLibraryThreadsPage` if the bridge times out.
+ */
+export function requestLibraryPage({
+  win,
+  offset = 0,
+  limit = 20,
+  pinned = false,
+  fetchImpl = globalThis.fetch,
+  getCachedAccountId,
+  setCachedAccountId,
+  bridgeTimeoutMs = 12000,
+}) {
+  const origin =
+    win?.location?.origin && win.location.origin !== "null"
+      ? win.location.origin
+      : PERPLEXITY_CONFIG.origin;
+
+  const hasBridge = Boolean(
+    win &&
+      typeof win.postMessage === "function" &&
+      typeof win.addEventListener === "function" &&
+      (win.document?.documentElement?.getAttribute(domMarkers.pageInjectedAttr) ===
+        "1" ||
+        win[domMarkers.globalFlag])
+  );
+
+  const runDirect = async () => {
+    let accountId = getCachedAccountId();
+    if (accountId === undefined) {
+      accountId = await fetchAccountId(fetchImpl, origin);
+      setCachedAccountId(accountId);
+    }
+    return fetchLibraryThreadsPage({
+      offset,
+      limit,
+      pinned,
+      accountId,
+      fetchImpl,
+      origin,
+    });
+  };
+
+  if (!hasBridge) {
+    return runDirect();
+  }
+
+  return new Promise((resolve) => {
+    const requestId = makeRequestId();
+    let settled = false;
+
+    const cleanup = (timer) => {
+      clearTimeout(timer);
+      win.removeEventListener("message", onMessage);
+    };
+
+    const onMessage = (event) => {
+      if (event.source !== win) return;
+      const data = event.data;
+      if (
+        !data ||
+        data.ns !== MESSAGE_NS ||
+        data.type !== WINDOW_MESSAGES.LIST_THREADS_RESPONSE ||
+        data.requestId !== requestId
+      ) {
+        return;
+      }
+      if (settled) return;
+      settled = true;
+      cleanup(timer);
+      resolve(
+        data.result || { ok: false, status: 0, error: "Empty library response" }
+      );
+    };
+
+    const timer = setTimeout(async () => {
+      if (settled) return;
+      settled = true;
+      win.removeEventListener("message", onMessage);
+      resolve(await runDirect());
+    }, bridgeTimeoutMs);
+
+    win.addEventListener("message", onMessage);
+    const targetOrigin =
+      origin !== PERPLEXITY_CONFIG.origin && win.location?.origin === "null"
+        ? "*"
+        : origin;
+    win.postMessage(
+      {
+        ns: MESSAGE_NS,
+        type: WINDOW_MESSAGES.LIST_THREADS_REQUEST,
+        requestId,
+        offset,
+        limit,
+        pinned,
       },
       targetOrigin
     );
@@ -250,12 +458,14 @@ export function initContentScript({
   fetchImpl = globalThis.fetch,
   retryDelaysMs = [500, 1200],
   bridgeTimeoutMs = 5000,
+  batchPageDelayMs = 180,
+  batchStepDelayMs = 320,
 } = {}) {
   console.info("[ppx-autorename] content script loaded");
 
   ensurePageScriptInjected(win, chromeObj);
 
-  const toaster = createRenameToaster({ win });
+  const toaster = createRenameToaster({ win, chromeObj });
 
   let currentSettings = {
     enabled: true,
@@ -268,10 +478,758 @@ export function initContentScript({
   const inFlightIds = new Set();
   const userRenamedIds = new Set();
   let cachedAccountId = undefined;
+  let lastOpenThreadCache = null;
+  let activeBatchController = null;
 
   function applySettings(nextSettings) {
     currentSettings = { ...currentSettings, ...nextSettings };
     toaster.updateSettings(currentSettings);
+  }
+
+  function rememberThreadSnapshot({
+    slug,
+    contextUuid,
+    readWriteToken,
+    backendUuid,
+    currentTitle = "",
+    question = "",
+    answer = "",
+    generatedTitle = "",
+  }) {
+    if (!slug) return;
+    const prevTitles =
+      lastOpenThreadCache?.slug === slug &&
+      Array.isArray(lastOpenThreadCache.titlesUsed)
+        ? lastOpenThreadCache.titlesUsed
+        : [];
+    const nextTitles = [...prevTitles];
+    if (currentTitle && !nextTitles.includes(currentTitle)) {
+      nextTitles.push(currentTitle);
+    }
+    if (generatedTitle && !nextTitles.includes(generatedTitle)) {
+      nextTitles.push(generatedTitle);
+    }
+    lastOpenThreadCache = {
+      slug,
+      contextUuid,
+      readWriteToken: readWriteToken || null,
+      backendUuid: backendUuid || slug,
+      currentTitle: generatedTitle || currentTitle,
+      question,
+      answer,
+      titlesUsed: nextTitles.slice(-6),
+    };
+  }
+
+  function sleepCancellable(ms, signal) {
+    if (!ms || ms <= 0 || signal?.aborted) return Promise.resolve();
+    return new Promise((resolve) => {
+      const onAbort = () => {
+        clearTimeout(timer);
+        resolve();
+      };
+      const timer = setTimeout(() => {
+        signal?.removeEventListener?.("abort", onAbort);
+        resolve();
+      }, ms);
+      signal?.addEventListener?.("abort", onAbort, { once: true });
+    });
+  }
+
+  function resolveCurrentSlug() {
+    const loc = win?.location;
+    if (!loc) return null;
+    return parseSlugFromUrl(loc.href || loc.pathname || "");
+  }
+
+  /**
+   * Renames or regenerates the title of the currently open `/search/<slug>` thread.
+   */
+  async function renameCurrentChat({ regenerate = false } = {}) {
+    const slug = resolveCurrentSlug();
+    if (!slug) {
+      return {
+        ok: false,
+        error: "Open a Perplexity thread (/search/...) first to rename it.",
+      };
+    }
+
+    const lockKey = `manual:${slug}`;
+    if (inFlightIds.has(lockKey)) {
+      return {
+        ok: false,
+        error: "Already renaming this chat — wait a moment.",
+      };
+    }
+    inFlightIds.add(lockKey);
+
+    try {
+      const stateRes = await sendToServiceWorker(chromeObj, {
+        type: RUNTIME_MESSAGES.GET_STATE,
+      });
+      if (stateRes?.ok && stateRes.settings) {
+        applySettings(stateRes.settings);
+      }
+
+      toaster.showRenaming({
+        step: regenerate
+          ? "Regenerating fresh 3-7 word title..."
+          : "Reading open chat & generating title...",
+        label: regenerate ? "REGENERATING_" : "RENAMING CHAT_",
+        forceShow: true,
+      });
+
+      let detail = null;
+      if (
+        lastOpenThreadCache &&
+        lastOpenThreadCache.slug === slug &&
+        lastOpenThreadCache.contextUuid &&
+        lastOpenThreadCache.question
+      ) {
+        detail = { ...lastOpenThreadCache };
+      } else {
+        const detailRes = await requestThreadDetail({
+          win,
+          slug,
+          fetchImpl,
+          getCachedAccountId: () => cachedAccountId,
+          setCachedAccountId: (v) => {
+            cachedAccountId = v;
+          },
+          bridgeTimeoutMs: Math.max(bridgeTimeoutMs, 10000),
+        });
+        if (!detailRes?.ok || !detailRes.detail) {
+          const errMsg =
+            detailRes?.error || "Could not read this Perplexity thread.";
+          toaster.showError({ message: errMsg, forceShow: true });
+          return { ok: false, error: errMsg };
+        }
+        detail = detailRes.detail;
+      }
+
+      if (!detail.contextUuid || !detail.question) {
+        const errMsg =
+          "Wait for Perplexity to finish creating the thread before renaming.";
+        toaster.showError({ message: errMsg, forceShow: true });
+        return { ok: false, error: errMsg };
+      }
+
+      const avoidTitles = [];
+      if (regenerate) {
+        if (detail.currentTitle) avoidTitles.push(detail.currentTitle);
+        if (
+          lastOpenThreadCache?.slug === slug &&
+          Array.isArray(lastOpenThreadCache.titlesUsed)
+        ) {
+          for (const t of lastOpenThreadCache.titlesUsed) {
+            if (t && !avoidTitles.includes(t)) avoidTitles.push(t);
+          }
+        }
+      }
+
+      const titleRes = await sendToServiceWorker(chromeObj, {
+        type: RUNTIME_MESSAGES.GENERATE_TITLE,
+        question: detail.question,
+        answer: detail.answer || "",
+        contextUuid: detail.contextUuid,
+        regenerate,
+        avoidTitles,
+      });
+
+      if (!titleRes?.ok || !titleRes.title) {
+        const errMsg = titleRes?.error || "Failed to generate title";
+        toaster.showError({ message: errMsg, forceShow: true });
+        return { ok: false, error: errMsg };
+      }
+
+      toaster.showRenaming({
+        step: "Saving title to Perplexity...",
+        label: regenerate ? "REGENERATING_" : "RENAMING CHAT_",
+        forceShow: true,
+      });
+
+      const renameRes = await renameWithRetries(
+        () =>
+          requestSingleRename({
+            win,
+            contextUuid: detail.contextUuid,
+            readWriteToken: detail.readWriteToken,
+            title: titleRes.title,
+            slug,
+            fetchImpl,
+            getCachedAccountId: () => cachedAccountId,
+            setCachedAccountId: (v) => {
+              cachedAccountId = v;
+            },
+            bridgeTimeoutMs,
+          }),
+        { maxRetries: 2, retryDelaysMs }
+      );
+
+      if (!renameRes.ok) {
+        const errMsg =
+          renameRes.error || `Perplexity returned HTTP ${renameRes.status}`;
+        toaster.showError({ message: errMsg, forceShow: true });
+        await sendToServiceWorker(chromeObj, {
+          type: RUNTIME_MESSAGES.RECORD_STATUS,
+          status: {
+            outcome: "failed",
+            reason: "rename-http-error",
+            source: titleRes.source,
+            provider: titleRes.provider || "",
+            httpStatus: renameRes.status,
+            error: errMsg,
+          },
+        });
+        return { ok: false, error: errMsg };
+      }
+
+      localRenamedIds.add(detail.contextUuid);
+      rememberThreadSnapshot({
+        slug,
+        contextUuid: detail.contextUuid,
+        readWriteToken: detail.readWriteToken,
+        backendUuid: detail.backendUuid || slug,
+        currentTitle: detail.currentTitle || "",
+        question: detail.question,
+        answer: detail.answer || "",
+        generatedTitle: titleRes.title,
+      });
+
+      toaster.showSuccess({
+        title: titleRes.title,
+        source: titleRes.source,
+        label: regenerate ? "✓ TITLE REGENERATED" : "✓ THREAD RENAMED",
+        forceShow: true,
+        onRegenerate: () => {
+          renameCurrentChat({ regenerate: true }).catch(() => {});
+        },
+      });
+
+      await sendToServiceWorker(chromeObj, {
+        type: RUNTIME_MESSAGES.RECORD_RENAME,
+        entry: {
+          contextUuid: detail.contextUuid,
+          backendUuid: detail.backendUuid || slug,
+          title: titleRes.title,
+          source: titleRes.source,
+          provider: titleRes.provider || "",
+          error: titleRes.error || null,
+          httpStatus: renameRes.status,
+        },
+      });
+
+      return {
+        ok: true,
+        title: titleRes.title,
+        source: titleRes.source,
+        provider: titleRes.provider || "",
+        error: titleRes.error || null,
+      };
+    } finally {
+      inFlightIds.delete(lockKey);
+    }
+  }
+
+  function cancelBatchRename() {
+    if (activeBatchController) {
+      activeBatchController.abort();
+      return true;
+    }
+    return false;
+  }
+
+  async function reportBatchStatus(statusPatch) {
+    await sendToServiceWorker(chromeObj, {
+      type: RUNTIME_MESSAGES.UPDATE_BATCH_STATUS,
+      status: statusPatch,
+    });
+  }
+
+  /**
+   * Retroactively renames threads across the user's Perplexity Library by count, date window, or all.
+   */
+  async function runBatchRename(rawSpec = {}) {
+    if (activeBatchController) {
+      return { ok: false, error: "A batch library rename is already running." };
+    }
+
+    const spec = normalizeBatchSpec(rawSpec);
+    const controller = new AbortController();
+    const { signal } = controller;
+    activeBatchController = controller;
+
+    const jobId = makeRequestId();
+    const startedAt = Date.now();
+    const MAX_SCAN_PAGES = 100;
+
+    try {
+      const stateRes = await sendToServiceWorker(chromeObj, {
+        type: RUNTIME_MESSAGES.GET_STATE,
+      });
+      if (stateRes?.ok && stateRes.settings) {
+        applySettings(stateRes.settings);
+      }
+
+      const alreadyRenamedIds = new Set([
+        ...(Array.isArray(stateRes?.renamedIds) ? stateRes.renamedIds : []),
+        ...localRenamedIds,
+      ]);
+
+      await reportBatchStatus({
+        jobId,
+        running: true,
+        state: "scanning",
+        phase: "scanning",
+        label: spec.label,
+        spec,
+        scanned: 0,
+        processed: 0,
+        total: 0,
+        renamed: 0,
+        skipped: 0,
+        failed: 0,
+        currentTitle: "",
+        message: `Scanning Perplexity Library (${spec.label})…`,
+        error: null,
+        startedAt,
+      });
+
+      toaster.showBatchProgress({
+        phase: "scanning",
+        processed: 0,
+        total: 0,
+        renamed: 0,
+        skipped: 0,
+        label: spec.label,
+        onCancel: cancelBatchRename,
+      });
+
+      const byKey = new Map();
+      const nowMs = Date.now();
+
+      // Best-effort check for pinned threads first
+      const pinnedRes = await requestLibraryPage({
+        win,
+        offset: 0,
+        limit: 50,
+        pinned: true,
+        fetchImpl,
+        getCachedAccountId: () => cachedAccountId,
+        setCachedAccountId: (v) => {
+          cachedAccountId = v;
+        },
+        bridgeTimeoutMs: Math.max(bridgeTimeoutMs, 10000),
+      });
+      if (pinnedRes?.fatal) {
+        throw new Error(
+          pinnedRes.error || "Sign in to perplexity.ai before running batch rename."
+        );
+      }
+      if (pinnedRes?.ok && Array.isArray(pinnedRes.items)) {
+        for (const item of pinnedRes.items) {
+          if (item.key && !byKey.has(item.key)) {
+            byKey.set(item.key, item);
+          }
+        }
+      }
+
+      // Paginate regular library threads newest-first
+      let offset = 0;
+      const pageSize = PERPLEXITY_CONFIG.defaultLibraryPageSize || 20;
+
+      for (let pageIdx = 0; pageIdx < MAX_SCAN_PAGES; pageIdx++) {
+        if (signal.aborted) break;
+
+        const pageRes = await requestLibraryPage({
+          win,
+          offset,
+          limit: pageSize,
+          pinned: false,
+          fetchImpl,
+          getCachedAccountId: () => cachedAccountId,
+          setCachedAccountId: (v) => {
+            cachedAccountId = v;
+          },
+          bridgeTimeoutMs: Math.max(bridgeTimeoutMs, 10000),
+        });
+
+        if (!pageRes?.ok) {
+          if (pageIdx === 0 || pageRes?.fatal) {
+            throw new Error(
+              pageRes?.error || "Could not read Perplexity Library threads."
+            );
+          }
+          break;
+        }
+
+        const pageItems = Array.isArray(pageRes.items) ? pageRes.items : [];
+        for (const item of pageItems) {
+          if (item.key && !byKey.has(item.key)) {
+            byKey.set(item.key, item);
+          }
+        }
+
+        await reportBatchStatus({
+          jobId,
+          running: true,
+          state: "scanning",
+          phase: "scanning",
+          label: spec.label,
+          spec,
+          scanned: byKey.size,
+          processed: 0,
+          total: 0,
+          renamed: 0,
+          skipped: 0,
+          failed: 0,
+          currentTitle: "",
+          message: `Scanning library… (${byKey.size} chats found)`,
+          error: null,
+          startedAt,
+        });
+
+        toaster.showBatchProgress({
+          phase: "scanning",
+          processed: byKey.size,
+          total: 0,
+          renamed: 0,
+          skipped: 0,
+          label: spec.label,
+          onCancel: cancelBatchRename,
+        });
+
+        const stopEarly = shouldStopLibraryPagination(pageItems, spec, {
+          collectedCount: byKey.size,
+          nowMs,
+        });
+
+        if (!pageRes.hasNextPage || pageItems.length === 0 || stopEarly) {
+          break;
+        }
+
+        offset += pageItems.length;
+        await sleepCancellable(batchPageDelayMs, signal);
+      }
+
+      if (signal.aborted) {
+        const stopStatus = {
+          jobId,
+          running: false,
+          state: "cancelled",
+          phase: "done",
+          label: spec.label,
+          spec,
+          scanned: byKey.size,
+          processed: 0,
+          total: 0,
+          renamed: 0,
+          skipped: 0,
+          failed: 0,
+          currentTitle: "",
+          message: "Batch library scan stopped.",
+          error: null,
+          startedAt,
+          finishedAt: Date.now(),
+        };
+        await reportBatchStatus(stopStatus);
+        toaster.showBatchSummary({
+          renamed: 0,
+          skipped: 0,
+          cancelled: true,
+          message: stopStatus.message,
+        });
+        return { ok: true, ...stopStatus };
+      }
+
+      const orderedThreads = [...byKey.values()].sort((a, b) => {
+        if (typeof a.updatedAtMs === "number" && typeof b.updatedAtMs === "number") {
+          return b.updatedAtMs - a.updatedAtMs;
+        }
+        return 0;
+      });
+
+      const { scopedTotal, toRename, preSkipped } = selectBatchCandidates(
+        orderedThreads,
+        spec,
+        {
+          nowMs,
+          alreadyRenamedIds,
+          userRenamedIds,
+        }
+      );
+
+      if (toRename.length === 0) {
+        const doneMsg =
+          scopedTotal === 0
+            ? `No library chats found for "${spec.label}".`
+            : `All ${scopedTotal} matching chat${scopedTotal === 1 ? "" : "s"} already renamed (${preSkipped} skipped).`;
+
+        const emptyStatus = {
+          jobId,
+          running: false,
+          state: "completed",
+          phase: "done",
+          label: spec.label,
+          spec,
+          scanned: byKey.size,
+          processed: 0,
+          total: 0,
+          renamed: 0,
+          skipped: preSkipped,
+          failed: 0,
+          currentTitle: "",
+          message: doneMsg,
+          error: null,
+          startedAt,
+          finishedAt: Date.now(),
+        };
+        await reportBatchStatus(emptyStatus);
+        toaster.showBatchSummary({
+          renamed: 0,
+          skipped: preSkipped,
+          cancelled: false,
+          message: doneMsg,
+        });
+        return { ok: true, ...emptyStatus };
+      }
+
+      let processed = 0;
+      let renamed = 0;
+      let skipped = preSkipped;
+      let failed = 0;
+      let lastTitle = "";
+      let fatalStopError = null;
+
+      for (const item of toRename) {
+        if (signal.aborted) break;
+
+        processed++;
+        const previewLabel =
+          item.title || item.questionPreview || item.slug || "Thread";
+
+        await reportBatchStatus({
+          jobId,
+          running: true,
+          state: "renaming",
+          phase: "renaming",
+          label: spec.label,
+          spec,
+          scanned: byKey.size,
+          processed,
+          total: toRename.length,
+          renamed,
+          skipped,
+          failed,
+          currentTitle: previewLabel,
+          message: `Renaming ${processed} of ${toRename.length}…`,
+          error: null,
+          startedAt,
+        });
+
+        toaster.showBatchProgress({
+          phase: "renaming",
+          processed,
+          total: toRename.length,
+          renamed,
+          skipped,
+          currentTitle: previewLabel,
+          label: spec.label,
+          onCancel: cancelBatchRename,
+        });
+
+        let detail = null;
+        if (item.slug) {
+          const detailRes = await requestThreadDetail({
+            win,
+            slug: item.slug,
+            fetchImpl,
+            getCachedAccountId: () => cachedAccountId,
+            setCachedAccountId: (v) => {
+              cachedAccountId = v;
+            },
+            bridgeTimeoutMs: Math.max(bridgeTimeoutMs, 10000),
+          });
+          if (detailRes?.fatal) {
+            fatalStopError =
+              detailRes.error ||
+              "Perplexity paused requests (HTTP 401/403/429). Retry shortly.";
+            failed++;
+            break;
+          }
+          if (detailRes?.ok && detailRes.detail) {
+            detail = detailRes.detail;
+          }
+        }
+
+        const contextUuid = detail?.contextUuid || item.contextUuid;
+        const readWriteToken =
+          detail?.readWriteToken || item.readWriteToken || null;
+        const backendUuid =
+          detail?.backendUuid || item.backendUuid || item.slug || null;
+        const question =
+          detail?.question || item.questionPreview || item.title || "";
+        const answer = detail?.answer || "";
+
+        if (!contextUuid || !question) {
+          skipped++;
+          await sleepCancellable(batchStepDelayMs, signal);
+          continue;
+        }
+
+        const titleRes = await sendToServiceWorker(chromeObj, {
+          type: RUNTIME_MESSAGES.GENERATE_TITLE,
+          question,
+          answer,
+          contextUuid,
+        });
+
+        if (!titleRes?.ok || !titleRes.title) {
+          failed++;
+          await sleepCancellable(batchStepDelayMs, signal);
+          continue;
+        }
+
+        const existingTitle = (detail?.currentTitle || item.title || "").trim();
+        if (
+          existingTitle &&
+          existingTitle === titleRes.title.trim() &&
+          spec.skipAlreadyRenamed
+        ) {
+          skipped++;
+          localRenamedIds.add(contextUuid);
+          await sleepCancellable(batchStepDelayMs, signal);
+          continue;
+        }
+
+        const renameRes = await renameWithRetries(
+          () =>
+            requestSingleRename({
+              win,
+              contextUuid,
+              readWriteToken,
+              title: titleRes.title,
+              slug: item.slug,
+              batch: true,
+              fetchImpl,
+              getCachedAccountId: () => cachedAccountId,
+              setCachedAccountId: (v) => {
+                cachedAccountId = v;
+              },
+              bridgeTimeoutMs,
+            }),
+          { maxRetries: 1, retryDelaysMs }
+        );
+
+        if (renameRes.ok) {
+          renamed++;
+          lastTitle = titleRes.title;
+          localRenamedIds.add(contextUuid);
+          await sendToServiceWorker(chromeObj, {
+            type: RUNTIME_MESSAGES.RECORD_RENAME,
+            entry: {
+              contextUuid,
+              backendUuid,
+              title: titleRes.title,
+              source: titleRes.source,
+              provider: titleRes.provider || "",
+              error: titleRes.error || null,
+              httpStatus: renameRes.status,
+            },
+          });
+        } else {
+          failed++;
+          if (
+            renameRes.status === 401 ||
+            renameRes.status === 403 ||
+            renameRes.status === 429
+          ) {
+            fatalStopError =
+              renameRes.error ||
+              `Perplexity returned HTTP ${renameRes.status}; batch paused safely.`;
+            break;
+          }
+        }
+
+        await sleepCancellable(batchStepDelayMs, signal);
+      }
+
+      const wasCancelled = signal.aborted;
+      const finalState = fatalStopError
+        ? "error"
+        : wasCancelled
+          ? "cancelled"
+          : "completed";
+
+      const summaryMessage = fatalStopError
+        ? `${fatalStopError} (${renamed} renamed before pause)`
+        : wasCancelled
+          ? `Stopped after ${renamed} renamed · ${skipped} skipped.`
+          : `Batch complete: ${renamed} chat${renamed === 1 ? "" : "s"} renamed${
+              skipped > 0 ? ` · ${skipped} skipped` : ""
+            }${failed > 0 ? ` · ${failed} failed` : ""}.`;
+
+      const finalStatus = {
+        jobId,
+        running: false,
+        state: finalState,
+        phase: "done",
+        label: spec.label,
+        spec,
+        scanned: byKey.size,
+        processed,
+        total: toRename.length,
+        renamed,
+        skipped,
+        failed,
+        currentTitle: lastTitle,
+        message: summaryMessage,
+        error: fatalStopError,
+        startedAt,
+        finishedAt: Date.now(),
+      };
+
+      await reportBatchStatus(finalStatus);
+      if (fatalStopError && renamed === 0) {
+        toaster.showError({ message: summaryMessage, forceShow: true });
+      } else {
+        toaster.showBatchSummary({
+          renamed,
+          skipped,
+          failed,
+          cancelled: wasCancelled,
+          message: summaryMessage,
+        });
+      }
+
+      return { ok: !fatalStopError, ...finalStatus };
+    } catch (err) {
+      const errMsg = err?.message || "Batch library rename failed";
+      const errStatus = {
+        jobId,
+        running: false,
+        state: "error",
+        phase: "done",
+        label: spec.label,
+        spec,
+        scanned: 0,
+        processed: 0,
+        total: 0,
+        renamed: 0,
+        skipped: 0,
+        failed: 1,
+        currentTitle: "",
+        message: errMsg,
+        error: errMsg,
+        startedAt,
+        finishedAt: Date.now(),
+      };
+      await reportBatchStatus(errStatus);
+      toaster.showError({ message: errMsg, forceShow: true });
+      return { ok: false, error: errMsg };
+    } finally {
+      activeBatchController = null;
+    }
   }
 
   sendToServiceWorker(chromeObj, { type: RUNTIME_MESSAGES.GET_STATE })
@@ -282,15 +1240,59 @@ export function initContentScript({
     })
     .catch(() => {});
 
-  const onRuntimeMessage = (msg) => {
-    if (
-      msg &&
-      msg.ns === MESSAGE_NS &&
-      msg.type === RUNTIME_MESSAGES.SETTINGS_UPDATED &&
-      msg.settings
-    ) {
-      applySettings(msg.settings);
+  const onRuntimeMessage = (msg, _sender, sendResponse) => {
+    if (!msg || msg.ns !== MESSAGE_NS || typeof msg.type !== "string") {
+      return false;
     }
+
+    if (msg.type === RUNTIME_MESSAGES.SETTINGS_UPDATED && msg.settings) {
+      applySettings(msg.settings);
+      return false;
+    }
+
+    if (msg.type === RUNTIME_MESSAGES.PING_CONTENT) {
+      const slug = resolveCurrentSlug();
+      sendResponse?.({
+        ok: true,
+        url: win?.location?.href || "",
+        slug,
+        isThreadOpen: Boolean(slug),
+        batchRunning: Boolean(activeBatchController),
+      });
+      return false;
+    }
+
+    if (msg.type === RUNTIME_MESSAGES.RENAME_CURRENT_CHAT) {
+      renameCurrentChat({ regenerate: Boolean(msg.regenerate) })
+        .then((res) => sendResponse?.(res))
+        .catch((err) =>
+          sendResponse?.({
+            ok: false,
+            error: err?.message || "Failed to rename open chat",
+          })
+        );
+      return true;
+    }
+
+    if (msg.type === RUNTIME_MESSAGES.START_BATCH_RENAME) {
+      if (activeBatchController) {
+        sendResponse?.({
+          ok: false,
+          error: "A batch library rename is already running.",
+        });
+        return false;
+      }
+      runBatchRename(msg.spec || {}).catch(() => {});
+      sendResponse?.({ ok: true, started: true });
+      return false;
+    }
+
+    if (msg.type === RUNTIME_MESSAGES.CANCEL_BATCH_RENAME) {
+      const stopped = cancelBatchRename();
+      sendResponse?.({ ok: true, stopped });
+      return false;
+    }
+
     return false;
   };
 
@@ -451,9 +1453,26 @@ export function initContentScript({
 
     if (renameRes.ok) {
       localRenamedIds.add(contextUuid);
+      const slug = resolveCurrentSlug() || backendUuid || null;
+      if (slug) {
+        rememberThreadSnapshot({
+          slug,
+          contextUuid,
+          readWriteToken,
+          backendUuid: backendUuid || slug,
+          question,
+          answer,
+          generatedTitle: titleRes.title,
+        });
+      }
       toaster.showSuccess({
         title: titleRes.title,
         source: titleRes.source,
+        onRegenerate: slug
+          ? () => {
+              renameCurrentChat({ regenerate: true }).catch(() => {});
+            }
+          : null,
       });
 
       console.info("[ppx-autorename] renamed", {
@@ -547,8 +1566,12 @@ export function initContentScript({
 
   return {
     processAnswerComplete,
+    renameCurrentChat,
+    runBatchRename,
+    cancelBatchRename,
     toaster,
     destroy() {
+      cancelBatchRename();
       if (win && typeof win.removeEventListener === "function") {
         win.removeEventListener("message", onWindowMessage);
       }

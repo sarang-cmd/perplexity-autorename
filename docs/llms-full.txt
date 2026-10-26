@@ -3,7 +3,7 @@
 > Free, MIT-licensed Chrome/Chromium Manifest V3 extension that fixes messy or cut-off Perplexity.ai thread titles by automatically renaming every new thread to a crisp 3–7 word topic summary once the first answer finishes streaming. Works immediately via 60-second unpacked install on Chrome, Brave, Arc, Edge, and Vivaldi (no Chrome Web Store listing required), with 10 LLM providers plus a 100% offline zero-key fallback.
 
 - Website & Live Simulator: https://perplexity-autorename.vercel.app/
-- Direct Extension ZIP Download (v0.1.0): https://perplexity-autorename.vercel.app/?download=1#install
+- Direct Extension ZIP Download (v0.2.0): https://perplexity-autorename.vercel.app/?download=1#install
 - GitHub Repository (MIT Open Source): https://github.com/sarang-cmd/perplexity-autorename
 - Complete LLM Technical Reference: https://perplexity-autorename.vercel.app/llms-full.txt
 - Privacy Policy: https://perplexity-autorename.vercel.app/privacy-policy.html
@@ -29,7 +29,7 @@
 ---
 
 ## Quick Unpacked Installation (No Chrome Web Store Needed)
-1. Download `auto-rename-for-perplexity-v0.1.0.zip` from https://perplexity-autorename.vercel.app/?download=1#install and extract it to a permanent folder.
+1. Download `auto-rename-for-perplexity-v0.2.0.zip` from https://perplexity-autorename.vercel.app/?download=1#install and extract it to a permanent folder.
 2. Open `chrome://extensions` (or `brave://extensions`, `arc://extensions`, `edge://extensions`) and enable **Developer mode**.
 3. Click **Load unpacked** and select the extracted directory containing `manifest.json`.
 4. Refresh any open `perplexity.ai` tab and ask a new question. Works out of the box with zero API key (offline heuristic) or with Groq, Gemini, OpenRouter, OpenAI, Anthropic, Mistral, DeepSeek, Sarvam, OpenCode Zen, or local Ollama (`http://127.0.0.1:11434`).
@@ -61,8 +61,8 @@ A: Yes. Because Auto-Rename updates the thread via Perplexity's own server-side 
 Q: What happens if I type an invalid regular expression in Exclude Patterns?
 A: Auto-Rename compiles each regex safely inside a guard and ignores malformed expressions without crashing or blocking valid patterns.
 
-Q: Does Auto-Rename touch old threads in my Perplexity Library?
-A: No. It only names new threads at the moment their first answer finishes streaming, so your existing archived threads and manually curated titles are never modified.
+Q: Can I batch-rename old threads already in my Perplexity Library?
+A: Yes! Automatic mode only names brand-new threads so old threads are never touched unexpectedly, AND v0.2.0+ includes a dedicated Batch Library Renamer in both the toolbar popup and Settings page—letting you retroactively rename the Past 50 / 20 Chats, the Last 20 / 30 Days of your Library, or All Library Chats while skipping already-renamed and manually edited titles.
 
 ---
 

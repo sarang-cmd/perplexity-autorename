@@ -76,6 +76,8 @@ export async function callProvider({
   customBaseUrl = "",
   question,
   answer = "",
+  avoidTitles = [],
+  regenerate = false,
   fetchImpl = fetch,
   timeoutMs = 15000,
 }) {
@@ -100,6 +102,8 @@ export async function callProvider({
         apiKey: trimmedKey,
         question,
         answer,
+        avoidTitles,
+        regenerate,
         fetchImpl,
         signal: controller.signal,
       });
@@ -110,6 +114,8 @@ export async function callProvider({
         apiKey: trimmedKey,
         question,
         answer,
+        avoidTitles,
+        regenerate,
         fetchImpl,
         signal: controller.signal,
       });
@@ -120,6 +126,8 @@ export async function callProvider({
         apiKey: trimmedKey,
         question,
         answer,
+        avoidTitles,
+        regenerate,
         fetchImpl,
         signal: controller.signal,
       });
@@ -131,6 +139,8 @@ export async function callProvider({
         apiKey: trimmedKey,
         question,
         answer,
+        avoidTitles,
+        regenerate,
         fetchImpl,
         signal: controller.signal,
       });
@@ -162,6 +172,8 @@ export async function generateTitleWithFallback({
   apiKey = "",
   question,
   answer = "",
+  avoidTitles = [],
+  regenerate = false,
   fetchImpl = fetch,
   timeoutMs = 15000,
 }) {
@@ -169,6 +181,21 @@ export async function generateTitleWithFallback({
   const spec = getProviderSpec(providerId);
   const model = settings.model || spec.defaultModel;
   const prefix = settings.titlePrefix || "";
+
+  // Strip prefix from avoidTitles so comparison matches raw core titles too
+  const normalizedAvoid = Array.isArray(avoidTitles)
+    ? avoidTitles
+        .filter((t) => typeof t === "string" && t.trim())
+        .flatMap((t) => {
+          const clean = t.trim();
+          const trimmedPrefix = String(prefix || "").trim();
+          if (trimmedPrefix && clean.toLowerCase().startsWith(trimmedPrefix.toLowerCase())) {
+            const stripped = clean.slice(trimmedPrefix.length).trim();
+            return stripped ? [clean, stripped] : [clean];
+          }
+          return [clean];
+        })
+    : [];
 
   try {
     const llmTitle = await callProvider({
@@ -178,6 +205,8 @@ export async function generateTitleWithFallback({
       customBaseUrl: settings.customBaseUrl || "",
       question,
       answer,
+      avoidTitles: normalizedAvoid,
+      regenerate,
       fetchImpl,
       timeoutMs,
     });
@@ -189,7 +218,9 @@ export async function generateTitleWithFallback({
       error: null,
     };
   } catch (err) {
-    const fallback = heuristicTitle(question, answer);
+    const fallback = heuristicTitle(question, answer, {
+      avoidTitles: normalizedAvoid,
+    });
     return {
       title: applyTitlePrefix(fallback, prefix),
       source: "heuristic",

@@ -3,7 +3,7 @@
 > Free, MIT-licensed Chrome/Chromium Manifest V3 extension that fixes messy or cut-off Perplexity.ai thread titles by automatically renaming every new thread to a crisp 3–7 word topic summary once the first answer finishes streaming. Works immediately via 60-second unpacked install on Chrome, Brave, Arc, Edge, and Vivaldi (no Chrome Web Store listing required), with 10 LLM providers plus a 100% offline zero-key fallback.
 
 - Website & Live Simulator: https://perplexity-autorename.vercel.app/
-- Direct Extension ZIP Download (v0.1.0): https://perplexity-autorename.vercel.app/?download=1#install
+- Direct Extension ZIP Download (v0.2.0): https://perplexity-autorename.vercel.app/?download=1#install
 - GitHub Repository (MIT Open Source): https://github.com/sarang-cmd/perplexity-autorename
 - Complete LLM Technical Reference: https://perplexity-autorename.vercel.app/llms-full.txt
 - Privacy Policy: https://perplexity-autorename.vercel.app/privacy-policy.html

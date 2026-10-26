@@ -287,31 +287,48 @@ export function extractAnswerText(data) {
     }
   }
 
-  // Fallback 2: blocks with markdown_block (ask_text)
+  // Fallback 2: blocks with markdown_block (ask_text or numbered ask_text_<n>_markdown)
   if (Array.isArray(data[SF.blocks])) {
     const blockParts = [];
+    const numberedParts = new Map();
     for (const block of data[SF.blocks]) {
       if (!block || typeof block !== "object") continue;
       const mb = block[SF.markdownBlock];
-      if (mb && typeof mb === "object") {
-        if (
-          block[SF.intendedUsage] &&
-          block[SF.intendedUsage] !== SF.askTextUsage
-        ) {
-          continue;
-        }
-        if (typeof mb[SF.answer] === "string" && mb[SF.answer].length > 0) {
-          blockParts.push(mb[SF.answer]);
-        } else if (Array.isArray(mb[SF.chunks])) {
-          const joined = mb[SF.chunks]
-            .filter((c) => typeof c === "string")
-            .join("");
-          if (joined) blockParts.push(joined);
+      if (!mb || typeof mb !== "object") continue;
+
+      const usage = block[SF.intendedUsage];
+      const textVal =
+        typeof mb[SF.answer] === "string" && mb[SF.answer].length > 0
+          ? mb[SF.answer]
+          : Array.isArray(mb[SF.chunks])
+            ? mb[SF.chunks].filter((c) => typeof c === "string").join("")
+            : "";
+
+      if (!textVal) continue;
+
+      if (!usage || usage === SF.askTextUsage) {
+        blockParts.push(textVal);
+        continue;
+      }
+
+      if (typeof usage === "string" && SF.askTextSectionPattern) {
+        const m = SF.askTextSectionPattern.exec(usage);
+        if (m && m[1] !== undefined) {
+          const idx = Number(m[1]);
+          if (!numberedParts.has(idx)) {
+            numberedParts.set(idx, textVal);
+          }
         }
       }
     }
     if (blockParts.length > 0) {
       return blockParts.join("\n\n").trim();
+    }
+    if (numberedParts.size > 0) {
+      const sorted = [...numberedParts.entries()]
+        .sort((a, b) => a[0] - b[0])
+        .map(([, val]) => val);
+      return sorted.join("\n\n").trim();
     }
   }
 

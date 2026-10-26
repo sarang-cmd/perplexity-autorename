@@ -80,6 +80,8 @@ export async function callOpenCodeZen({
   apiKey,
   question,
   answer,
+  avoidTitles = [],
+  regenerate = false,
   fetchImpl = fetch,
   signal,
 }) {
@@ -92,7 +94,8 @@ export async function callOpenCodeZen({
   }
 
   const trimmedKey = typeof apiKey === "string" && apiKey.trim() ? apiKey.trim() : "public";
-  const userPrompt = buildUserPrompt(question, answer);
+  const userPrompt = buildUserPrompt(question, answer, { avoidTitles });
+  const temp = regenerate || (Array.isArray(avoidTitles) && avoidTitles.length > 0) ? 0.65 : 0.2;
 
   let endpoint;
   let headers = {
@@ -116,6 +119,7 @@ export async function callOpenCodeZen({
     body = {
       model: cleanModel,
       max_tokens: MAX_OUTPUT_TOKENS,
+      temperature: temp,
       system: SYSTEM_PROMPT,
       messages: [{ role: "user", content: userPrompt }],
     };
@@ -125,7 +129,7 @@ export async function callOpenCodeZen({
     body = {
       systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
       contents: [{ role: "user", parts: [{ text: userPrompt }] }],
-      generationConfig: { maxOutputTokens: MAX_OUTPUT_TOKENS, temperature: 0.2 },
+      generationConfig: { maxOutputTokens: MAX_OUTPUT_TOKENS, temperature: temp },
     };
   } else {
     endpoint = `${trimmedBase}/chat/completions`;
@@ -136,7 +140,7 @@ export async function callOpenCodeZen({
         { role: "user", content: userPrompt },
       ],
       max_tokens: MAX_OUTPUT_TOKENS,
-      temperature: 0.2,
+      temperature: temp,
     };
     if (/gpt-oss/i.test(cleanModel)) {
       body.reasoning_effort = "low";

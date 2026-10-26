@@ -146,6 +146,63 @@ describe("ui: Bottom-Right Pixel Rename Toaster", () => {
     toaster.showRenaming();
     assert.equal(toaster.getState(), "idle");
   });
+
+  it("renders inline ↻ REGEN action on showSuccess and ■ STOP progress bar on showBatchProgress", () => {
+    const { window, elementsById } = createFakeDom();
+    const toaster = createRenameToaster({
+      win: window,
+      chromeObj: { runtime: { getURL: (p) => `chrome-extension://ext/${p}` } },
+      autoHideSuccessMs: 0,
+    });
+
+    // Even when auto-rename `enabled` is false, manual/batch `forceShow` still displays if `showToast` is true
+    toaster.updateSettings({ enabled: false, showToast: true });
+
+    let regenClicks = 0;
+    toaster.showSuccess({
+      title: "SQLite WAL Concurrency Overview",
+      source: "llm",
+      label: "✓ TITLE REGENERATED",
+      forceShow: true,
+      onRegenerate: () => {
+        regenClicks++;
+      },
+    });
+    assert.equal(toaster.getState(), "success");
+
+    const host = elementsById.get("ppx-autorename-toast");
+    const card = host.shadowRoot.children[1];
+    const footerRow = card.children[3];
+    const actionBtn = footerRow.children[1];
+    assert.equal(actionBtn.textContent, "↻ REGEN");
+    actionBtn.click();
+    assert.equal(regenClicks, 1);
+
+    let stopClicks = 0;
+    toaster.showBatchProgress({
+      phase: "renaming",
+      processed: 15,
+      total: 50,
+      renamed: 12,
+      skipped: 3,
+      currentTitle: "QUIC Stream Multiplexing",
+      label: "Past 50 Chats",
+      onCancel: () => {
+        stopClicks++;
+      },
+    });
+    assert.equal(toaster.getState(), "batch");
+    assert.equal(actionBtn.textContent, "■ STOP");
+    actionBtn.click();
+    assert.equal(stopClicks, 1);
+
+    toaster.showBatchSummary({
+      renamed: 42,
+      skipped: 8,
+      cancelled: false,
+    });
+    assert.equal(toaster.getState(), "success");
+  });
 });
 
 describe("ui: Pixel Logo & Removed Website Theme Option", () => {

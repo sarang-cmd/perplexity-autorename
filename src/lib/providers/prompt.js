@@ -17,15 +17,34 @@ export const SYSTEM_PROMPT =
  *
  * @param {string} question
  * @param {string} answer
+ * @param {{ avoidTitles?: string[] }} [options]
  * @returns {string}
  */
-export function buildUserPrompt(question, answer = "") {
+export function buildUserPrompt(question, answer = "", { avoidTitles = [] } = {}) {
   const q = String(question || "").trim().slice(0, MAX_QUESTION_CHARS);
   const a = String(answer || "").trim().slice(0, MAX_ANSWER_CHARS);
+
+  const avoidClean = Array.isArray(avoidTitles)
+    ? [
+        ...new Set(
+          avoidTitles
+            .map((t) => (typeof t === "string" ? t.trim().slice(0, 120) : ""))
+            .filter(Boolean)
+        ),
+      ].slice(0, 5)
+    : [];
+
+  const avoidClause =
+    avoidClean.length > 0
+      ? `\n\nDo NOT repeat these previous titles — write a distinctly worded 3-7 word alternative:\n${avoidClean
+          .map((t) => `- ${t}`)
+          .join("\n")}`
+      : "";
+
   if (!a) {
-    return `Question:\n${q}\n\nGenerate a 3-7 word thread title:`;
+    return `Question:\n${q}${avoidClause}\n\nGenerate a 3-7 word thread title:`;
   }
-  return `Question:\n${q}\n\nAnswer excerpt:\n${a}\n\nGenerate a 3-7 word thread title:`;
+  return `Question:\n${q}\n\nAnswer excerpt:\n${a}${avoidClause}\n\nGenerate a 3-7 word thread title:`;
 }
 
 /**

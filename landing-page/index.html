@@ -40,7 +40,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png" />
     <link rel="manifest" href="site.webmanifest" />
     <meta name="theme-color" content="#091318" />
-    <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://perplexity-autorename.vercel.app/#website","name":"Auto-Rename for Perplexity","alternateName":["PPX Auto-Rename","Perplexity Auto-Rename Extension"],"url":"https://perplexity-autorename.vercel.app/"},{"@type":"SoftwareApplication","@id":"https://perplexity-autorename.vercel.app/#software","name":"Auto-Rename for Perplexity","alternateName":["PPX Auto-Rename","Perplexity Auto-Rename Extension","Perplexity Thread Auto-Renamer"],"applicationCategory":"BrowserApplication","applicationSubCategory":"ProductivityExtension","operatingSystem":"Chrome, Brave, Arc, Microsoft Edge, Vivaldi, Opera (Chromium Manifest V3)","softwareVersion":"0.1.0","isAccessibleForFree":true,"license":"https://opensource.org/licenses/MIT","url":"https://perplexity-autorename.vercel.app/","downloadUrl":"https://perplexity-autorename.vercel.app/releases/auto-rename-for-perplexity-v0.1.0.zip","installUrl":"https://perplexity-autorename.vercel.app/?download=1#install","codeRepository":"https://github.com/sarang-cmd/perplexity-autorename","screenshot":["https://perplexity-autorename.vercel.app/assets/screenshots/02-toast-renamed.png","https://perplexity-autorename.vercel.app/assets/screenshots/03-toolbar-popup.png","https://perplexity-autorename.vercel.app/assets/screenshots/04-settings-full.png"],"featureList":["Automatically renames new Perplexity.ai threads to crisp 3-7 word titles after the first answer streams","Supports 10 LLM providers (Groq, OpenRouter, Gemini, OpenAI, Anthropic, Mistral, DeepSeek, Sarvam, OpenCode Zen, Ollama)","100% offline zero-key heuristic fallback title generator","Optional custom title prefixes (e.g. [Research], [Bug]) and regex exclude patterns","Isolated Shadow-DOM pixel HUD toaster notification on perplexity.ai","Never overwrites manual thread edits or follow-up questions"],"offers":{"@type":"Offer","price":"0","priceCurrency":"USD","availability":"https://schema.org/InStock"},"author":{"@type":"Person","name":"sarang-cmd","url":"https://github.com/sarang-cmd"}},{"@type":"HowTo","name":"How to Install Auto-Rename for Perplexity in Chrome, Brave, Arc, or Edge","totalTime":"PT1M","step":[{"@type":"HowToStep","position":1,"name":"Download Extension ZIP","text":"Download auto-rename-for-perplexity-v0.1.0.zip from perplexity-autorename.vercel.app and unzip it."},{"@type":"HowToStep","position":2,"name":"Enable Developer Mode","text":"Open chrome://extensions (or brave://extensions, arc://extensions, edge://extensions) and enable Developer mode."},{"@type":"HowToStep","position":3,"name":"Load Unpacked","text":"Click Load unpacked and select the extracted folder containing manifest.json."}]},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does this change Perplexity.ai's fonts, theme, or page layout?","acceptedAnswer":{"@type":"Answer","text":"No. Perplexity's website layout, fonts, and CSS remain 100% untouched. Only the extension's own toolbar popup, settings page, and isolated Shadow-DOM bottom-right status toast use the retro pixel HUD theme—and the toast can be disabled anytime with one click."}},{"@type":"Question","name":"Where is my LLM API key stored, and can websites read it?","acceptedAnswer":{"@type":"Answer","text":"Your API key is stored locally on your device in chrome.storage.local and read exclusively inside the extension's background MV3 Service Worker (src/background/service-worker.js). Neither perplexity.ai nor content scripts nor even the popup DOM ever read back the raw key string. Zero developer servers or analytics exist."}},{"@type":"Question","name":"Can I use it completely free without an API key?","acceptedAnswer":{"@type":"Answer","text":"Yes! Out of the box with no API key saved, Auto-Rename uses its built-in offline keyword heuristic (heuristicTitle()) to generate clean 3–7 word titles locally with zero network requests. You can also use free-tier keys from Groq, Google AI Studio (Gemini), OpenRouter :free models, or a local Ollama server."}},{"@type":"Question","name":"Will it overwrite titles I rename manually or on follow-up questions?","acceptedAnswer":{"@type":"Answer","text":"Never. Follow-up messages and related-query clicks are skipped automatically via last_backend_uuid and is_related_query. And if you manually rename a thread in Perplexity's sidebar, the extension detects that request and locks out auto-renaming for that thread permanently."}}]}]}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://perplexity-autorename.vercel.app/#website","name":"Auto-Rename for Perplexity","alternateName":["PPX Auto-Rename","Perplexity Auto-Rename Extension"],"url":"https://perplexity-autorename.vercel.app/"},{"@type":"SoftwareApplication","@id":"https://perplexity-autorename.vercel.app/#software","name":"Auto-Rename for Perplexity","alternateName":["PPX Auto-Rename","Perplexity Auto-Rename Extension","Perplexity Thread Auto-Renamer"],"applicationCategory":"BrowserApplication","applicationSubCategory":"ProductivityExtension","operatingSystem":"Chrome, Brave, Arc, Microsoft Edge, Vivaldi, Opera (Chromium Manifest V3)","softwareVersion":"0.2.0","isAccessibleForFree":true,"license":"https://opensource.org/licenses/MIT","url":"https://perplexity-autorename.vercel.app/","downloadUrl":"https://perplexity-autorename.vercel.app/releases/auto-rename-for-perplexity-v0.2.0.zip","installUrl":"https://perplexity-autorename.vercel.app/?download=1#install","codeRepository":"https://github.com/sarang-cmd/perplexity-autorename","screenshot":["https://perplexity-autorename.vercel.app/assets/screenshots/02-toast-renamed.png","https://perplexity-autorename.vercel.app/assets/screenshots/03-toolbar-popup.png","https://perplexity-autorename.vercel.app/assets/screenshots/04-settings-full.png"],"featureList":["Automatically renames new Perplexity.ai threads to crisp 3-7 word titles after the first answer streams","On-demand Rename & ↻ Regenerate Title for the currently open Perplexity chat (from toolbar popup, settings, or inline toast button)","Retroactive Batch Library Renamer: rename Past 50 / 20 Chats, Last 20 / 30 Days of Library, Custom N, or All Library Chats with live progress and instant Stop","Supports 10 LLM providers (Groq, OpenRouter, Gemini, OpenAI, Anthropic, Mistral, DeepSeek, Sarvam, OpenCode Zen, Ollama)","100% offline zero-key heuristic fallback title generator","Optional custom title prefixes (e.g. [Research], [Bug]) and regex exclude patterns","Isolated Shadow-DOM pixel HUD toaster notification on perplexity.ai","Never overwrites manual thread edits or follow-up questions"],"offers":{"@type":"Offer","price":"0","priceCurrency":"USD","availability":"https://schema.org/InStock"},"author":{"@type":"Person","name":"sarang-cmd","url":"https://github.com/sarang-cmd"}},{"@type":"HowTo","name":"How to Install Auto-Rename for Perplexity in Chrome, Brave, Arc, or Edge","totalTime":"PT1M","step":[{"@type":"HowToStep","position":1,"name":"Download Extension ZIP","text":"Download auto-rename-for-perplexity-v0.2.0.zip from perplexity-autorename.vercel.app and unzip it."},{"@type":"HowToStep","position":2,"name":"Enable Developer Mode","text":"Open chrome://extensions (or brave://extensions, arc://extensions, edge://extensions) and enable Developer mode."},{"@type":"HowToStep","position":3,"name":"Load Unpacked","text":"Click Load unpacked and select the extracted folder containing manifest.json."}]},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does this change Perplexity.ai's fonts, theme, or page layout?","acceptedAnswer":{"@type":"Answer","text":"No. Perplexity's website layout, fonts, and CSS remain 100% untouched. Only the extension's own toolbar popup, settings page, and isolated Shadow-DOM bottom-right status toast use the retro pixel HUD theme—and the toast can be disabled anytime with one click."}},{"@type":"Question","name":"Where is my LLM API key stored, and can websites read it?","acceptedAnswer":{"@type":"Answer","text":"Your API key is stored locally on your device in chrome.storage.local and read exclusively inside the extension's background MV3 Service Worker (src/background/service-worker.js). Neither perplexity.ai nor content scripts nor even the popup DOM ever read back the raw key string. Zero developer servers or analytics exist."}},{"@type":"Question","name":"Can I use it completely free without an API key?","acceptedAnswer":{"@type":"Answer","text":"Yes! Out of the box with no API key saved, Auto-Rename uses its built-in offline keyword heuristic (heuristicTitle()) to generate clean 3–7 word titles locally with zero network requests. You can also use free-tier keys from Groq, Google AI Studio (Gemini), OpenRouter :free models, or a local Ollama server."}},{"@type":"Question","name":"Will it overwrite titles I rename manually or on follow-up questions?","acceptedAnswer":{"@type":"Answer","text":"Never. Follow-up messages and related-query clicks are skipped automatically via last_backend_uuid and is_related_query. And if you manually rename a thread in Perplexity's sidebar, the extension detects that request and locks out auto-renaming for that thread permanently."}}]}]}</script>
     <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
     <link rel="stylesheet" href="styles.css" />
     <script>
@@ -77,11 +77,11 @@
         </nav>
 
         <div class="nav-actions">
-          <span class="badge ok">MV3 · V0.1.0</span>
+          <span class="badge ok">MV3 · V0.2.0</span>
           <a
             href="#install"
             data-download-release
-            download="auto-rename-for-perplexity-v0.1.0.zip"
+            download="auto-rename-for-perplexity-v0.2.0.zip"
             class="btn primary sm"
           >
             ⬇ DOWNLOAD .ZIP
@@ -97,7 +97,7 @@
           <div>
             <div class="hero-eyebrow">
               <span class="badge ok"><span class="badge-dot"></span>CHROME / BRAVE / ARC / EDGE</span>
-              <span class="badge">MIT OPEN SOURCE</span>
+              <span class="badge">BATCH LIBRARY RENAME</span>
               <span class="badge">ZERO TELEMETRY</span>
             </div>
 
@@ -106,20 +106,21 @@
             </h1>
 
             <p class="hero-lead">
-              <strong>Auto-Rename for Perplexity</strong> watches only the first answer stream of a
-              brand-new <code>perplexity.ai</code> thread, summarizes the Q&amp;A into a scannable
-              <strong>3–7 word title</strong>, and saves it straight to your Perplexity sidebar
-              (<code>HTTP 204</code>)—without altering Perplexity’s page styles.
+              <strong>Auto-Rename for Perplexity</strong> automatically titles every new
+              <code>perplexity.ai</code> thread into a scannable <strong>3–7 word title</strong>,
+              lets you <strong>rename or ↻ regenerate</strong> the currently open chat on demand,
+              and <strong>batch-renames your Perplexity Library</strong> (past 50 chats, last 20 or
+              30 days, or all chats)—without altering Perplexity’s page styles.
             </p>
 
             <div class="hero-cta-row">
               <a
                 href="#install"
                 data-download-release
-                download="auto-rename-for-perplexity-v0.1.0.zip"
+                download="auto-rename-for-perplexity-v0.2.0.zip"
                 class="btn primary"
               >
-                ⬇ DOWNLOAD V0.1.0 (.ZIP)
+                ⬇ DOWNLOAD V0.2.0 (.ZIP)
               </a>
               <a href="#install" class="btn">60-SECOND INSTALL →</a>
               <a href="#architecture" class="btn">HOW IT WORKS</a>
@@ -139,7 +140,7 @@
                 <div class="stat-lbl">Author telemetry</div>
               </div>
               <div class="stat-box">
-                <div class="stat-val">53/53</div>
+                <div class="stat-val">64/64</div>
                 <div class="stat-lbl">Automated tests</div>
               </div>
             </div>
@@ -412,9 +413,9 @@
                     after confirming the new title, and stays completely absent on follow-up turns.
                   </div>
                   <div class="callout-row">
-                    <strong>SOURCE TRANSPARENCY</strong>
-                    Displays whether your title came from your configured <code>LLM</code> or the
-                    instant offline <code>HEURISTIC</code> fallback.
+                    <strong>INLINE ↻ REGEN &amp; BATCH PROGRESS</strong>
+                    Click <code>↻ REGEN</code> right on the toast to generate a fresh alternative
+                    title, or monitor live progress and stop a Batch Library Rename anytime.
                   </div>
                 </div>
               </div>
@@ -440,19 +441,20 @@
                 </p>
                 <div class="callout-list">
                   <div class="callout-row">
-                    <strong>LIVE RENAME STATUS BANNER</strong>
-                    Shows the most recent generated title, active provider, and exact Perplexity
-                    persistence status (<code>HTTP 204</code>).
+                    <strong>OPEN CHAT RENAME &amp; ↻ REGENERATE</strong>
+                    Rename the currently open Perplexity chat on demand or click
+                    <code>↻ Regenerate</code> to craft a fresh non-repeating 3–7 word variation.
+                  </div>
+                  <div class="callout-row">
+                    <strong>BATCH RENAME PERPLEXITY LIBRARY</strong>
+                    Retroactively clean up the <strong>Past 50 / 20 Chats</strong>,
+                    <strong>Last 20 / 30 Days</strong>, or <strong>All Library Chats</strong>—skipping
+                    already-renamed threads automatically.
                   </div>
                   <div class="callout-row">
                     <strong>INSTANT PROVIDER SWITCH &amp; TEST LLM</strong>
                     Swap between all 10 providers, replace your API key (write-only—never read back
                     into popup DOM), and run a live latency check with <code>TEST LLM</code>.
-                  </div>
-                  <div class="callout-row">
-                    <strong>TOASTER SWITCH &amp; TITLE PREFIX</strong>
-                    Toggle the bottom-right HUD toaster on/off or set a sprint prefix like
-                    <code>[Research]</code> with immediate broadcast to open Perplexity tabs.
                   </div>
                 </div>
               </div>
@@ -694,10 +696,10 @@ if (isAskSseRequest &amp;&amp; response.ok &amp;&amp; response.body?.tee) {
                 <a
                   href="#install"
                   data-download-release
-                  download="auto-rename-for-perplexity-v0.1.0.zip"
+                  download="auto-rename-for-perplexity-v0.2.0.zip"
                   class="btn primary"
                 >
-                  ⬇ DOWNLOAD V0.1.0 (.ZIP)
+                  ⬇ DOWNLOAD V0.2.0 (.ZIP)
                 </a>
                 <button type="button" class="btn" data-copy="chrome://extensions">
                   COPY CHROME://EXTENSIONS
@@ -712,8 +714,8 @@ if (isAskSseRequest &amp;&amp; response.ok &amp;&amp; response.body?.tee) {
               </div>
 
               <p style="color: var(--muted); margin: 12px 0">
-                Clone the repository, bundle all 5 entrypoints with <code>esbuild</code> in ~30ms,
-                verify all 53 tests, and load the <code>extension/</code> folder unpacked:
+                Clone the repository, bundle all 5 entrypoints with <code>esbuild</code> in ~35ms,
+                verify all 64 tests, and load the <code>extension/</code> folder unpacked:
               </p>
 
               <div class="code-panel">
@@ -786,6 +788,18 @@ npm run build &amp;&amp; npm test</code></pre>
                 <code>is_related_query</code>. And if you manually rename a thread in Perplexity’s
                 sidebar, the extension detects that request and locks out auto-renaming for that
                 thread permanently.
+              </div>
+            </details>
+
+            <details class="faq-item">
+              <summary>CAN I BATCH-RENAME OLD CHATS IN MY PERPLEXITY LIBRARY OR REGENERATE A TITLE?</summary>
+              <div class="faq-body">
+                <strong>Yes!</strong> Open the toolbar popup or Settings page to
+                <strong>Rename</strong> or <strong>↻ Regenerate</strong> the currently open chat on
+                demand (or click <code>↻ REGEN</code> right on the bottom-right HUD toast), or run
+                <strong>Batch Rename Library</strong> across the <strong>Past 50 / 20 Chats</strong>,
+                <strong>Last 20 / 30 Days</strong>, or <strong>All Library Chats</strong> with live
+                progress and instant cancellation. Manual edits are always preserved.
               </div>
             </details>
           </div>
@@ -889,8 +903,8 @@ npm run build &amp;&amp; npm test</code></pre>
             <a
               href="#install"
               data-download-release
-              download="auto-rename-for-perplexity-v0.1.0.zip"
-              >DOWNLOAD V0.1.0</a
+              download="auto-rename-for-perplexity-v0.2.0.zip"
+              >DOWNLOAD V0.2.0</a
             >
             <a href="#architecture">ARCHITECTURE</a>
             <a href="guides/">GUIDES &amp; FIXES</a>

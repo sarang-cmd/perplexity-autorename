@@ -14,11 +14,11 @@
           <div>
             <h1 class="brand-title" style="font-size: 14px">Auto-Rename for Perplexity</h1>
             <div class="brand-sub">
-              Automatically titles new Perplexity threads (3-7 words) once the first answer finishes.
+              Auto-titles new Perplexity threads, regenerates open chat titles, and batch-renames library history.
             </div>
           </div>
         </div>
-        <span class="badge ok">MV3 · V0.1.0</span>
+        <span class="badge ok">MV3 · V0.2.0</span>
       </header>
 
       <!-- Live Last Rename Status -->
@@ -31,6 +31,84 @@
           </div>
           <div id="last-status-detail" class="hint" style="margin: 0">
             Open a fresh Perplexity tab and ask a new question to trigger auto-renaming.
+          </div>
+        </div>
+      </section>
+
+      <!-- On-Demand Current Chat + Batch Library Renamer -->
+      <section class="card" aria-labelledby="batch-heading">
+        <div class="status-row" style="margin-bottom: 10px">
+          <h2 id="batch-heading" style="margin: 0">Current Chat &amp; Batch Library Renamer</h2>
+          <span id="opt-batch-badge" class="badge ok">READY</span>
+        </div>
+
+        <div class="field">
+          <label>Current Open Perplexity Chat</label>
+          <div class="action-pair">
+            <button id="opt-rename-current-btn" type="button" class="primary">
+              Rename Current Open Chat
+            </button>
+            <button id="opt-regen-current-btn" type="button">
+              ↻ Regenerate Name
+            </button>
+          </div>
+          <div id="opt-current-feedback" class="feedback" role="status"></div>
+        </div>
+
+        <div class="field" style="margin-bottom: 0">
+          <label>Batch Rename Library Presets</label>
+          <div id="opt-preset-chips" class="preset-chips" style="margin-bottom: 12px">
+            <button type="button" class="preset-chip active" data-spec="count:50">Past 50 Chats</button>
+            <button type="button" class="preset-chip" data-spec="days:20">Last 20 Days</button>
+            <button type="button" class="preset-chip" data-spec="days:30">Last 30 Days</button>
+            <button type="button" class="preset-chip" data-spec="count:20">Past 20 Chats</button>
+            <button type="button" class="preset-chip" data-spec="days:7">Last 7 Days</button>
+            <button type="button" class="preset-chip" data-spec="days:90">Last 90 Days</button>
+            <button type="button" class="preset-chip" data-spec="all">Rename All Chats</button>
+          </div>
+
+          <div class="grid-2">
+            <div class="field">
+              <label for="opt-batch-mode">Scope Mode</label>
+              <select id="opt-batch-mode">
+                <option value="count">Past N Chats</option>
+                <option value="days">Last N Days of Library</option>
+                <option value="all">Entire Perplexity Library (All Chats)</option>
+              </select>
+            </div>
+
+            <div id="opt-batch-number-wrap" class="field">
+              <label id="opt-batch-number-label" for="opt-batch-number">Number of Chats</label>
+              <input id="opt-batch-number" type="number" min="1" max="5000" value="50" />
+            </div>
+          </div>
+
+          <div class="status-row" style="margin-top: 4px">
+            <label class="mini-check-row" for="opt-skip-renamed">
+              <input id="opt-skip-renamed" type="checkbox" checked />
+              <span>Skip chats already renamed by this extension (manual edits are always preserved)</span>
+            </label>
+            <div style="display: flex; gap: 8px">
+              <button id="opt-start-batch-btn" type="button" class="primary">
+                Start Batch Rename
+              </button>
+              <button id="opt-stop-batch-btn" type="button" class="danger hidden">
+                ■ Stop Batch
+              </button>
+            </div>
+          </div>
+
+          <div id="opt-batch-progress" class="batch-progress-box hidden">
+            <div class="batch-progress-top">
+              <span id="opt-batch-label" class="batch-progress-label">Scanning Perplexity Library…</span>
+              <span id="opt-batch-pct" class="batch-progress-pct">0%</span>
+            </div>
+            <div class="pixel-progress-track">
+              <div id="opt-batch-fill" class="pixel-progress-fill"></div>
+            </div>
+            <div class="batch-stats-row">
+              <span id="opt-batch-stats">0 renamed · 0 skipped</span>
+            </div>
           </div>
         </div>
       </section>
@@ -182,7 +260,8 @@
       <section class="card" aria-labelledby="privacy-heading">
         <h2 id="privacy-heading">Data &amp; Privacy Disclosure</h2>
         <div class="hint" style="margin: 0; font-size: 13px; line-height: 1.55">
-          When enabled on a brand-new Perplexity thread, only the first question (up to 600 chars)
+          When automatic renaming, open-chat renaming/regeneration, or batch library renaming runs on
+          <code>https://www.perplexity.ai/*</code>, only the opening question (up to 600 chars)
           and an excerpt of the first answer (up to 1,200 chars) are sent directly from your browser
           to the LLM API endpoint you configure above solely to generate a 3-7 word thread title. Your API
           key, settings, and rename history stay in <code>chrome.storage.local</code> on your device.
