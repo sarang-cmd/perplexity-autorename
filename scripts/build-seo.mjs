@@ -10,8 +10,39 @@ const LANDING = path.join(ROOT, "landing-page");
 const SITE_URL = "https://perplexity-autorename.vercel.app";
 const REPO_URL = "https://github.com/sarang-cmd/perplexity-autorename";
 const DOWNLOAD_URL = `${SITE_URL}/?download=1#install`;
-const TODAY = "2026-10-26";
+const TODAY = "2026-10-28";
 const INDEXNOW_KEY = "8f4e2a9c1b7d3e6f5a0c8b2d4e6f1a3c";
+
+const ORGANIZATION_LD = {
+  "@type": "Organization",
+  "@id": `${SITE_URL}/#organization`,
+  name: "Auto-Rename for Perplexity",
+  alternateName: ["PPX Auto-Rename", "Perplexity Auto-Rename"],
+  url: `${SITE_URL}/`,
+  logo: {
+    "@type": "ImageObject",
+    "@id": `${SITE_URL}/#logo`,
+    url: `${SITE_URL}/favicon-512x512.png`,
+    contentUrl: `${SITE_URL}/favicon-512x512.png`,
+    width: 512,
+    height: 512,
+    caption: "Auto-Rename for Perplexity",
+  },
+  sameAs: [REPO_URL],
+};
+
+const FAVICON_AND_BRAND_HEAD = `    <meta property="og:site_name" content="Auto-Rename for Perplexity" />
+    <meta name="application-name" content="Auto-Rename for Perplexity" />
+    <meta name="apple-mobile-web-app-title" content="Auto-Rename for Perplexity" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
+    <link rel="icon" type="image/png" sizes="144x144" href="/favicon-144x144.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#091318" />`;
 
 const SOFTWARE_LD = {
   "@type": "SoftwareApplication",
@@ -852,7 +883,7 @@ function buildHead({
     <meta name="google-site-verification" content="7qXtBUikHAi5IxiEi94jbzxAAUfIvy1K3-osMQS-E_M" />
     <link rel="canonical" href="${canonicalUrl}" />
     <link rel="sitemap" type="application/xml" title="Sitemap" href="${SITE_URL}/sitemap.xml" />
-    <meta property="og:site_name" content="Auto-Rename for Perplexity" />
+${FAVICON_AND_BRAND_HEAD}
     <meta property="og:title" content="${escapeHtml(title)}" />
     <meta property="og:description" content="${escapeHtml(description)}" />
     <meta property="og:type" content="article" />
@@ -862,12 +893,6 @@ function buildHead({
     <meta name="twitter:title" content="${escapeHtml(title)}" />
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${SITE_URL}/assets/banner-social-1280x640.png" />
-    <link rel="icon" type="image/png" sizes="48x48" href="${assetPrefix}assets/icon-48.png" />
-    <link rel="icon" type="image/png" sizes="192x192" href="${assetPrefix}assets/icon-192.png" />
-    <link rel="icon" type="image/svg+xml" href="${assetPrefix}assets/logo.svg" />
-    <link rel="apple-touch-icon" sizes="180x180" href="${assetPrefix}assets/apple-touch-icon.png" />
-    <link rel="manifest" href="${assetPrefix}site.webmanifest" />
-    <meta name="theme-color" content="#091318" />
     <link rel="stylesheet" href="${assetPrefix}styles.css" />
     <script type="application/ld+json">${JSON.stringify({
       "@context": "https://schema.org",
@@ -888,7 +913,7 @@ function buildHeader(assetPrefix) {
             class="pixel-crisp"
           />
           <div>
-            <span class="nav-brand-title">PPX AUTO-RENAME</span>
+            <span class="nav-brand-title">AUTO-RENAME FOR PERPLEXITY</span>
             <span class="nav-brand-sub">3–7 Word Perplexity Thread Titler</span>
           </div>
         </a>
@@ -902,7 +927,7 @@ function buildHeader(assetPrefix) {
         </nav>
 
         <div class="nav-actions">
-          <span class="badge ok">MV3 · V0.1.0</span>
+          <span class="badge ok">MV3 · V0.2.0</span>
           <a
             href="${assetPrefix}index.html#install"
             data-download-release
@@ -941,7 +966,7 @@ function buildFooter(assetPrefix) {
               href="${assetPrefix}index.html#install"
               data-download-release
               download="auto-rename-for-perplexity-v0.2.0.zip"
-              >DOWNLOAD V0.1.0</a
+              >DOWNLOAD V0.2.0</a
             >
             <a href="${assetPrefix}guides/">ALL GUIDES</a>
             <a href="${assetPrefix}fix-perplexity-thread-titles/">FIX TITLES</a>
@@ -1259,11 +1284,14 @@ function buildRobotsTxt() {
 User-agent: *
 Allow: /
 
-# Google Search, AI Overviews & AI Mode
+# Google Search, Favicons, AI Overviews & AI Mode
 User-agent: Googlebot
 Allow: /
 
 User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Google-Favicon
 Allow: /
 
 User-agent: GoogleOther
@@ -1443,9 +1471,11 @@ function buildManifestJson() {
       background_color: "#091318",
       theme_color: "#091318",
       icons: [
-        { src: "/assets/icon-48.png", sizes: "48x48", type: "image/png" },
-        { src: "/assets/icon-192.png", sizes: "192x192", type: "image/png" },
-        { src: "/assets/logo.svg", sizes: "any", type: "image/svg+xml" },
+        { src: "/favicon-48x48.png", sizes: "48x48", type: "image/png" },
+        { src: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
+        { src: "/favicon-144x144.png", sizes: "144x144", type: "image/png" },
+        { src: "/favicon-192x192.png", sizes: "192x192", type: "image/png" },
+        { src: "/favicon-512x512.png", sizes: "512x512", type: "image/png" },
       ],
     },
     null,
@@ -1454,14 +1484,25 @@ function buildManifestJson() {
 }
 
 function upgradeRootIndexHtml(html) {
+  // Dedicated standalone WebSite structured data object per Google Search Central Site Names guidelines:
+  // https://developers.google.com/search/docs/appearance/site-names
+  // Includes lowercase subdomain as final alternateName fallback so Google never falls back to parent "Vercel".
+  const websiteLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": `${SITE_URL}/#website`,
+    name: "Auto-Rename for Perplexity",
+    alternateName: [
+      "PPX Auto-Rename",
+      "Perplexity Auto-Rename",
+      "perplexity-autorename.vercel.app",
+    ],
+    url: `${SITE_URL}/`,
+    publisher: { "@id": `${SITE_URL}/#organization` },
+  };
+
   const homeGraph = [
-    {
-      "@type": "WebSite",
-      "@id": `${SITE_URL}/#website`,
-      name: "Auto-Rename for Perplexity",
-      alternateName: ["PPX Auto-Rename", "Perplexity Auto-Rename Extension"],
-      url: `${SITE_URL}/`,
-    },
+    ORGANIZATION_LD,
     SOFTWARE_LD,
     {
       "@type": "HowTo",
@@ -1523,32 +1564,39 @@ function upgradeRootIndexHtml(html) {
             text: "Never. Follow-up messages and related-query clicks are skipped automatically via last_backend_uuid and is_related_query. And if you manually rename a thread in Perplexity's sidebar, the extension detects that request and locks out auto-renaming for that thread permanently.",
           },
         },
+        {
+          "@type": "Question",
+          name: "Can I batch-rename old chats in my Perplexity Library or regenerate a title?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Yes! Open the toolbar popup or Settings page to Rename or Regenerate the currently open chat on demand, or run Batch Rename Library across the Past 50 / 20 Chats, Last 20 / 30 Days, or All Library Chats with live progress and instant cancellation.",
+          },
+        },
       ],
     },
   ];
 
-  const seoHeadAdditions = `    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  const seoHeadAdditions = `    <!-- SEO_HEAD_START -->
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <meta name="google-site-verification" content="7qXtBUikHAi5IxiEi94jbzxAAUfIvy1K3-osMQS-E_M" />
     <link rel="canonical" href="${SITE_URL}/" />
     <link rel="sitemap" type="application/xml" title="Sitemap" href="${SITE_URL}/sitemap.xml" />
-    <meta property="og:site_name" content="Auto-Rename for Perplexity" />
-    <link rel="icon" type="image/png" sizes="48x48" href="assets/icon-48.png" />
-    <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png" />
-    <link rel="manifest" href="site.webmanifest" />
-    <meta name="theme-color" content="#091318" />
+${FAVICON_AND_BRAND_HEAD}
+    <script type="application/ld+json">${JSON.stringify(websiteLd)}</script>
     <script type="application/ld+json">${JSON.stringify({
       "@context": "https://schema.org",
       "@graph": homeGraph,
-    })}</script>`;
+    })}</script>
+    <!-- SEO_HEAD_END -->`;
 
   let out = html;
   // Remove previous SEO injection if re-run idempotently
-  out = out.replace(/\s*<meta name="robots"[\s\S]*?<\/script>(?=\s*<link rel="icon" type="image\/svg\+xml")/, "");
+  out = out.replace(/\s*<!-- SEO_HEAD_START -->[\s\S]*?<!-- SEO_HEAD_END -->/, "");
+  out = out.replace(/\s*<link rel="icon" type="image\/svg\+xml" href="assets\/logo\.svg" \/>/, "");
   out = out.replace(
-    '    <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />',
-    `${seoHeadAdditions}\n    <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />`
+    '    <link rel="stylesheet" href="styles.css" />',
+    `${seoHeadAdditions}\n    <link rel="stylesheet" href="styles.css" />`
   );
 
   // Add Guides link to primary nav if not already there
@@ -1595,16 +1643,57 @@ ${buildGuideCardsHtml("", null)}
 }
 
 function upgradePrivacyHtml(html) {
-  if (html.includes('rel="canonical"')) return html;
   const canonicalUrl = `${SITE_URL}/privacy-policy.html`;
-  const additions = `    <meta name="description" content="Privacy Policy for Auto-Rename for Perplexity: zero developer servers, zero analytics/telemetry in the extension, local chrome.storage.local API key isolation." />
-    <meta name="robots" content="index, follow" />
+  const privacyLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      ORGANIZATION_LD,
+      {
+        "@type": "WebPage",
+        "@id": `${canonicalUrl}#webpage`,
+        name: "Privacy Policy — Auto-Rename for Perplexity",
+        url: canonicalUrl,
+        description:
+          "Privacy Policy for Auto-Rename for Perplexity: zero developer servers, zero analytics/telemetry in the extension, local chrome.storage.local API key isolation.",
+        isPartOf: {
+          "@id": `${SITE_URL}/#website`,
+          "@type": "WebSite",
+          name: "Auto-Rename for Perplexity",
+          url: `${SITE_URL}/`,
+        },
+        publisher: { "@id": `${SITE_URL}/#organization` },
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Auto-Rename for Perplexity", item: `${SITE_URL}/` },
+          { "@type": "ListItem", position: 2, name: "Privacy Policy", item: canonicalUrl },
+        ],
+      },
+    ],
+  };
+
+  const additions = `    <!-- PRIVACY_SEO_START -->
+    <meta name="description" content="Privacy Policy for Auto-Rename for Perplexity: zero developer servers, zero analytics/telemetry in the extension, local chrome.storage.local API key isolation." />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+    <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1" />
+    <meta name="google-site-verification" content="7qXtBUikHAi5IxiEi94jbzxAAUfIvy1K3-osMQS-E_M" />
     <link rel="canonical" href="${canonicalUrl}" />
-    <link rel="icon" type="image/png" sizes="48x48" href="assets/icon-48.png" />
-    <link rel="manifest" href="site.webmanifest" />`;
-  return html.replace(
-    '    <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />',
-    `${additions}\n    <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />`
+${FAVICON_AND_BRAND_HEAD}
+    <meta property="og:title" content="Privacy Policy — Auto-Rename for Perplexity" />
+    <meta property="og:description" content="Zero developer servers, zero telemetry in the extension, and strict local chrome.storage.local API key isolation." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="${canonicalUrl}" />
+    <meta property="og:image" content="${SITE_URL}/assets/banner-social-1280x640.png" />
+    <script type="application/ld+json">${JSON.stringify(privacyLd)}</script>
+    <!-- PRIVACY_SEO_END -->`;
+
+  let out = html;
+  out = out.replace(/\s*<!-- PRIVACY_SEO_START -->[\s\S]*?<!-- PRIVACY_SEO_END -->/, "");
+  out = out.replace(/\s*<link rel="icon" type="image\/svg\+xml" href="assets\/logo\.svg" \/>/, "");
+  return out.replace(
+    '    <link rel="stylesheet" href="styles.css" />',
+    `${additions}\n    <link rel="stylesheet" href="styles.css" />`
   );
 }
 
@@ -1638,6 +1727,13 @@ fs.writeFileSync(path.join(DOCS, "privacy-policy.html"), upgradePrivacyHtml(rawP
 const itemsToMirror = [
   "FONT-LICENSES.md",
   "assets",
+  "favicon.ico",
+  "favicon-48x48.png",
+  "favicon-96x96.png",
+  "favicon-144x144.png",
+  "favicon-192x192.png",
+  "favicon-512x512.png",
+  "apple-touch-icon.png",
   "index.html",
   "privacy-policy.html",
   "release-bundle.js",

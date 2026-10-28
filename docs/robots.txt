@@ -5,11 +5,14 @@
 User-agent: *
 Allow: /
 
-# Google Search, AI Overviews & AI Mode
+# Google Search, Favicons, AI Overviews & AI Mode
 User-agent: Googlebot
 Allow: /
 
 User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Google-Favicon
 Allow: /
 
 User-agent: GoogleOther
